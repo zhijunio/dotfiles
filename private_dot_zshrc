@@ -6,9 +6,9 @@
 # -----------------------------------------------------------------------------
 # 基础环境变量
 # -----------------------------------------------------------------------------
-export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
-export HOMEBREW_PIP_INDEX_URL="https://pypi.mirrors.ustc.edu.cn/simple"
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.aliyun.com/homebrew-bottles"
 
 # Homebrew 路径设置
 if [[ -x /opt/homebrew/bin/brew ]]; then
@@ -106,3 +106,10 @@ setopt SHARE_HISTORY           # 多会话共享历史
 setopt APPEND_HISTORY          # 追加模式
 setopt INC_APPEND_HISTORY      # 立即写入
 setopt EXTENDED_HISTORY        # 保存时间戳
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+
+
+export HTTP_PROXY=http://127.0.0.1:7890
+export HTTPS_PROXY=http://127.0.0.1:7890
+export ALL_PROXY=socks5h://127.0.0.1:7898

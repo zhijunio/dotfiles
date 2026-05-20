@@ -36,3 +36,5 @@ alias pt="pnpm test"
 
 # yazi 文件管理器（使用函数版本，支持 cd）
 # alias y="yazi"
+alias c='CLAUDE_CODE_AUTO_COMPACT_WINDOW=400000 claude --dangerously-skip-permissions'
+
