@@ -92,9 +92,10 @@ if [[ -n "${_sdkman_prefix}" ]]; then
   # shellcheck disable=SC1091
   [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
   export SDKMAN_AUTO_ANSWER=true
-  sdk install java 21.0.10-graal
-  sdk install java 17.0.12-graal
+  sdk install java 25-tem
+  sdk install java 21-tem
   sdk install java 8.0.482-zulu
+  sdk use java 8.0.482-zulu
   sdk install maven
 fi
 unset _sdkman_prefix
