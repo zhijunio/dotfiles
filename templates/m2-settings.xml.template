@@ -34,8 +34,8 @@
         </server>
         <server>
             <id>sonarcloud</id>
-            <username>${SONARCLOUD_USERNAME}</username>
-            <password>${SONARCLOUD_TOKEN}</password>
+            <username>${SONAR_USERNAME}</username>
+            <password>${SONAR_TOKEN}</password>
         </server>
     </servers>
 

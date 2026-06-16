@@ -65,26 +65,6 @@ render_template() {
   fi
 }
 
-restore_gpg_private_key() {
-  local key_file="${GPG_PRIVATE_KEY_FILE:-$HOME/.secrets/gpg-private.asc}"
-  local key_b64="${GPG_PRIVATE_KEY_B64:-}"
-
-  if [[ -z "$key_b64" ]]; then
-    return 0
-  fi
-
-  mkdir -p "$(dirname "$key_file")"
-
-  if printf '%s' "$key_b64" | base64 -d > "$key_file" 2>/dev/null \
-    && grep -q 'BEGIN PGP PRIVATE KEY BLOCK' "$key_file" 2>/dev/null; then
-    chmod 600 "$key_file"
-    ok "restored GPG private key to $key_file"
-  else
-    rm -f "$key_file"
-    warn "failed to decode GPG_PRIVATE_KEY_B64"
-  fi
-}
-
 restore_ssh_private_key() {
   local key_file="${SSH_PRIVATE_KEY_FILE:-$HOME/.ssh/id_ed25519}"
   local key_b64="${SSH_PRIVATE_KEY_B64:-}"
@@ -142,7 +122,7 @@ main() {
     "$DOTFILES_DIR/templates/m2-settings.xml.template" \
     "$HOME/.m2/settings.xml" \
     600 \
-    '${MAVEN_CENTRAL_USERNAME} ${MAVEN_CENTRAL_PASSWORD} ${COMPANY_NEXUS_USERNAME} ${COMPANY_NEXUS_PASSWORD} ${GITHUB_USERNAME} ${GITHUB_TOKEN} ${SONARCLOUD_USERNAME} ${SONARCLOUD_TOKEN} ${COMPANY_NEXUS_URL}'
+    '${MAVEN_CENTRAL_USERNAME} ${MAVEN_CENTRAL_PASSWORD} ${COMPANY_NEXUS_USERNAME} ${COMPANY_NEXUS_PASSWORD} ${GITHUB_USERNAME} ${GITHUB_TOKEN} ${SONAR_USERNAME} ${SONAR_TOKEN} ${COMPANY_NEXUS_URL}'
 
   render_template \
     "$DOTFILES_DIR/templates/rclone.conf.template" \
@@ -151,7 +131,6 @@ main() {
     '${R2_ACCESS_KEY_ID} ${R2_SECRET_ACCESS_KEY} ${R2_ENDPOINT}'
 
   restore_ssh_private_key
-  restore_gpg_private_key
 
   echo ""
   echo "Secrets synced."

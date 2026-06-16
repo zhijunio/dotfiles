@@ -33,21 +33,21 @@ chmod 600 ~/.secrets/env
 
 ## Secrets 工作流
 
-**原则：** 密钥只在 `~/.secrets/env`（base64 私钥 + token），**不提交**；仓库只有 `templates/`。
+**原则：** 密钥只在 `~/.secrets/env`（token + 多行私钥 heredoc），**不提交**；仓库只有 `templates/`。
 
 | 类型 | 处理方式 |
 |------|----------|
 | Shell 变量（API token 等） | `~/.secrets/env` → `.zshrc` 启动时 `source` |
 | 结构化文件（XML、ini） | `templates/*.template` → `sync-secrets.sh` 渲染到 `~` |
-| GPG 私钥 armored | `GPG_PRIVATE_KEY_B64` → `GPG_PRIVATE_KEY_FILE`（供 GitHub `GPG_SECRET_KEY`） |
+| GPG | `MAVEN_GPG_PASSPHRASE` + `MAVEN_GPG_KEY`（heredoc，与 GitHub secret 同名）；`.zshrc` source 后可用 |
 | SSH 私钥 | `~/.secrets/env` 中 `SSH_PRIVATE_KEY_B64` → `sync-secrets.sh` 解码到 `SSH_PRIVATE_KEY_FILE`；公钥在 `ssh/id_ed25519.pub` |
 
-公钥在 `ssh/id_ed25519.pub`（symlink）；私钥用 env base64 恢复：
+公钥在 `ssh/id_ed25519.pub`（symlink）；SSH 私钥仍用 base64 恢复：
 
 ```sh
 # 写入 ~/.secrets/env
 base64 < ~/.ssh/id_ed25519 | tr -d '\n'    # → SSH_PRIVATE_KEY_B64
-base64 < ~/.secrets/gpg-private.asc | tr -d '\n'  # → GPG_PRIVATE_KEY_B64
+# GPG：整段 armored 密钥粘贴到 MAVEN_GPG_KEY heredoc（见 templates/secrets.env.example）
 ```
 
 ### 更新密钥后同步到 ~
