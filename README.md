@@ -39,7 +39,7 @@ chmod 600 ~/.secrets/env
 |------|----------|
 | Shell 变量（API token 等） | `~/.secrets/env` → `.zshrc` 启动时 `source` |
 | 结构化文件（XML、ini） | `templates/*.template` → `sync-secrets.sh` 渲染到 `~` |
-| GPG | `MAVEN_GPG_PASSPHRASE` + `MAVEN_GPG_KEY`（heredoc，与 GitHub secret 同名）；`.zshrc` source 后可用 |
+| GPG | `MAVEN_GPG_PASSPHRASE` + `MAVEN_GPG_PRIVATE_KEY`（heredoc，与 GitHub secret 同名）；`.zshrc` source 后可用 |
 | SSH 私钥 | `~/.secrets/env` 中 `SSH_PRIVATE_KEY_B64` → `sync-secrets.sh` 解码到 `SSH_PRIVATE_KEY_FILE`；公钥在 `ssh/id_ed25519.pub` |
 
 公钥在 `ssh/id_ed25519.pub`（symlink）；SSH 私钥仍用 base64 恢复：
@@ -47,7 +47,7 @@ chmod 600 ~/.secrets/env
 ```sh
 # 写入 ~/.secrets/env
 base64 < ~/.ssh/id_ed25519 | tr -d '\n'    # → SSH_PRIVATE_KEY_B64
-# GPG：整段 armored 密钥粘贴到 MAVEN_GPG_KEY heredoc（见 templates/secrets.env.example）
+# GPG：整段 armored 密钥粘贴到 MAVEN_GPG_PRIVATE_KEY heredoc（见 templates/secrets.env.example）
 ```
 
 ### 更新密钥后同步到 ~
