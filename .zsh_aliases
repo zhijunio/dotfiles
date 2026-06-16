@@ -63,3 +63,4 @@ alias dot='cd ~/.dotfiles'
 
 alias venv='vim ~/.secrets/env'
 
+alias reload_rc='source ~/.zshrc'

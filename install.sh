@@ -71,8 +71,7 @@ setup_macos() {
   sudo scutil --set LocalHostName "$COMPUTER_NAME"
   sudo systemsetup -settimezone "$TIMEZONE"
 
-  sudo pwpolicy -clearaccountpolicies
-  sudo spctl --master-disable
+  sudo pwpolicy -clearaccountpolicies || warn "pwpolicy skipped"
   defaults write NSGlobalDomain KeyRepeat -int 1
   defaults write NSGlobalDomain InitialKeyRepeat -int 10
   defaults write NSGlobalDomain AppleShowScrollBars -string "WhenScrolling"
@@ -90,6 +89,14 @@ setup_macos() {
 
   killall Dock 2>/dev/null || true
   killall Finder 2>/dev/null || true
+}
+
+trust_homebrew_taps() {
+  local tap
+  for tap in sdkman/tap anomalyco/tap caezium/tap farion1231/ccswitch tw93/tap; do
+    brew tap "$tap" 2>/dev/null || true
+    brew trust --tap "$tap" 2>/dev/null || warn "could not trust tap $tap"
+  done
 }
 
 setup_homebrew() {
@@ -114,7 +121,38 @@ setup_homebrew() {
     exit 1
   fi
 
-  brew bundle install --file "${DOTFILES_DIR}/Brewfile"
+  trust_homebrew_taps
+
+  local brewfile="${DOTFILES_DIR}/Brewfile"
+  local bundle_log="${DOTFILES_DIR}/brew-bundle.log"
+  local check_args=(--file "$brewfile" --verbose)
+  local install_args=(--file "$brewfile" --verbose --jobs auto)
+
+  echo ""
+  echo "--- Homebrew bundle ---"
+  info "Brewfile: $brewfile"
+  info "log: $bundle_log"
+  if [[ "${BREW_BUNDLE_UPGRADE:-}" == "1" ]]; then
+    install_args+=(--upgrade)
+    info "mode: upgrade + install"
+  else
+    check_args+=(--no-upgrade)
+    install_args+=(--no-upgrade)
+    info "mode: install missing only (--no-upgrade)"
+  fi
+  info "HOMEBREW_NO_AUTO_UPDATE=1"
+  echo ""
+
+  export HOMEBREW_NO_AUTO_UPDATE=1
+  export HOMEBREW_NO_ENV_HINTS=1
+
+  info "checking Brewfile..."
+  brew bundle check "${check_args[@]}" 2>&1 | tee "$bundle_log" || true
+  echo ""
+
+  info "installing..."
+  brew bundle install "${install_args[@]}" 2>&1 | tee -a "$bundle_log"
+  ok "brew bundle done (see $bundle_log)"
 }
 
 setup_sdkman() {
