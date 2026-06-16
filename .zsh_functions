@@ -1,0 +1,240 @@
+# -----------------------------------------------------------------------------
+# 自定义函数
+# -----------------------------------------------------------------------------
+
+# Yazi 文件管理器
+function y() {
+    local cwd
+    cwd=$(mktemp -t "yazi-cwd.XXXXXX")
+    yazi "$@" --cwd-file="$cwd"
+    if cwd=$(cat -- "$cwd") && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        cd -- "$cwd"
+    fi
+    rm -f -- "$cwd"
+}
+
+# 快速创建文件
+function touchd() {
+    mkdir -p "$(dirname "$1")"
+    touch "$1"
+}
+
+# Create directory and cd into it
+function mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+# Extract various archive types
+function extract() {
+  if [[ -f $1 ]]; then
+    case $1 in
+      *.tar.bz2)   tar xjf "$1"     ;;
+      *.tar.gz)    tar xzf "$1"     ;;
+      *.bz2)       bunzip2 "$1"     ;;
+      *.rar)       unrar x "$1"     ;;
+      *.gz)        gunzip "$1"      ;;
+      *.tar)       tar xf "$1"      ;;
+      *.tbz2)      tar xjf "$1"     ;;
+      *.tgz)       tar xzf "$1"     ;;
+      *.zip)       unzip "$1"       ;;
+      *.Z)         uncompress "$1"  ;;
+      *.7z)        7z x "$1"        ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+# 查找并进入目录
+function fd() {
+    cd "$(find . -type d -name "*$1*" | head -1)"
+}
+
+# 杀死占用端口的进程
+function killport() {
+    if [ -z "$1" ]; then
+        echo "Usage: killport <port_number>"
+        return 1
+    fi
+    local pid
+    pid=$(lsof -ti tcp:"$1")
+    if [ -n "$pid" ]; then
+        echo "Killing process $pid on port $1"
+        kill -9 "$pid"
+    else
+        echo "No process found on port $1"
+    fi
+}
+
+# Docker Cleanup Function
+function docker_cleanup() {
+  echo "Starting Docker cleanup..."
+
+  # Remove stopped containers
+  local containers
+  containers=$(docker ps -a -q)
+  if [[ -n "$containers" ]]; then
+    echo "Removing containers: $containers"
+    docker rm -f $containers
+  else
+    echo "No containers to remove"
+  fi
+
+  # Remove dangling images
+  local images
+  images=$(docker images -a -q -f dangling=true)
+  if [[ -n "$images" ]]; then
+    echo "Removing dangling images: $images"
+    docker rmi $images
+  else
+    echo "No dangling images to remove"
+  fi
+
+  # Clean networks
+  echo "Cleaning unused networks..."
+  docker network prune --force
+
+  echo "Docker cleanup completed!"
+}
+
+# 清理构建产物
+function build_cleanup() {
+    local dry_run=false
+    if [ "$1" = "-n" ] || [ "$1" = "--dry-run" ]; then
+        dry_run=true
+    fi
+
+    if [ "$(pwd -P)" = "/" ]; then
+        echo "cleanup: refuse to run at filesystem root" >&2
+        return 1
+    fi
+
+    local dirs_to_clean="node_modules target build dist out .next __pycache__ .pytest_cache .mypy_cache .gradle .turbo coverage .nuxt venv .venv Pods"
+
+    if [ "$dry_run" = true ]; then
+        echo "cleanup: dry-run (won't delete):"
+        for dir in $dirs_to_clean; do
+            find . -type d -name "$dir" -maxdepth 10 2>/dev/null | while read -r d; do
+                [[ "$d" != */.git/* ]] && echo "$d"
+            done
+        done
+        return 0
+    fi
+
+    for dir in $dirs_to_clean; do
+        find . -type d -name "$dir" -maxdepth 10 2>/dev/null | while read -r d; do
+            [[ "$d" != */.git/* ]] && rm -rf "$d" 2>/dev/null
+        done
+    done
+
+    find . -type f \( -name ".DS_Store" -o -name "*.log" \) -maxdepth 10 2>/dev/null | while read -r f; do
+        [[ "$f" != */.git/* ]] && rm -f "$f" 2>/dev/null
+    done
+
+    echo "cleanup: done"
+}
+
+# 拉取代码
+function code_pull() {
+    local root
+    if [ "$1" = "." ] || [ "$1" = "--here" ]; then
+        root="$(pwd -P)"
+        (cd "$root" && for dir in */; do [ -d "$dir/.git" ] && (cd "$dir" && git pull); done)
+    else
+        for root in "$HOME/github" "$HOME/work"; do
+            [ -d "$root" ] && (cd "$root" && for dir in */; do [ -d "$dir/.git" ] && (cd "$dir" && git pull); done)
+        done
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# Dotfiles workflow
+# -----------------------------------------------------------------------------
+function dotpush() {
+  (cd ~/.dotfiles && git add -A && git commit -m "${1:-update}" && git push)
+}
+function dotpull() {
+  (cd ~/.dotfiles && git pull)
+}
+
+# Git Push Function
+function gpo() {
+  local branch
+  branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || return
+
+  if [[ $# -eq 0 ]]; then
+    git push origin "$branch"
+  else
+    git push "$@"
+  fi
+}
+
+# Git Main Function - Switch to main/master and pull
+function gmp() {
+  # Check if we're in a git repository
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    return 1
+  fi
+
+  # Try to checkout main first, fall back to master
+  if git show-ref --verify --quiet refs/heads/main; then
+    echo "Switching to main branch..."
+    git checkout main
+  elif git show-ref --verify --quiet refs/heads/master; then
+    echo "Switching to master branch..."
+    git checkout master
+  else
+    echo "Error: Neither 'main' nor 'master' branch exists"
+    return 1
+  fi
+
+  # Pull the latest changes
+  echo "Pulling latest changes..."
+  git pull
+}
+
+# Git Tag Push Function - Create and push CalVer tag from main branch
+function gtp() {
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    return 1
+  fi
+
+  local current_branch
+  current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
+
+  # Ensure we're on main/master
+  if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
+    echo "Error: Must be on main or master branch (currently on '$current_branch')"
+    return 1
+  fi
+
+  # Pull latest changes
+  echo "Pulling latest changes..."
+  git pull || return 1
+
+  # Generate CalVer tag: vYY.MM.N (incrementing N from latest tag in current month)
+  local prefix
+  prefix="v$(date +"%y.%m")"
+
+  # Find the highest N in existing vYY.MM.N tags
+  local last_num
+  last_num=$(git tag -l "${prefix}.*" | sed "s/^${prefix}\.//" | sort -n | tail -1)
+
+  local next_num
+  if [[ -z "$last_num" ]]; then
+    next_num=1
+  else
+    next_num=$((last_num + 1))
+  fi
+
+  local tag="${prefix}.${next_num}"
+
+  echo "Creating tag: $tag"
+  git tag "$tag" || return 1
+
+  echo "Pushing tag to origin..."
+  git push origin "$tag"
+}

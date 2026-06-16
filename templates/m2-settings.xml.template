@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <mirrors>
+        <mirror>
+            <id>maven-default-http-blocker</id>
+            <mirrorOf>external:dont-match-anything-mate:*</mirrorOf>
+            <name>Pseudo repository to mirror external repositories initially using HTTP.</name>
+            <url>http://0.0.0.0/</url>
+        </mirror>
+    </mirrors>
+
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${MAVEN_CENTRAL_USERNAME}</username>
+            <password>${MAVEN_CENTRAL_PASSWORD}</password>
+        </server>
+        <server>
+            <id>nexus-snapshots</id>
+            <username>${COMPANY_NEXUS_USERNAME}</username>
+            <password>${COMPANY_NEXUS_PASSWORD}</password>
+        </server>
+        <server>
+            <id>nexus-releases</id>
+            <username>${COMPANY_NEXUS_USERNAME}</username>
+            <password>${COMPANY_NEXUS_PASSWORD}</password>
+        </server>
+        <server>
+            <id>github</id>
+            <username>${GITHUB_USERNAME}</username>
+            <password>${GITHUB_TOKEN}</password>
+        </server>
+        <server>
+            <id>sonarcloud</id>
+            <username>${SONARCLOUD_USERNAME}</username>
+            <password>${SONARCLOUD_TOKEN}</password>
+        </server>
+    </servers>
+
+    <profiles>
+        <profile>
+            <id>company</id>
+            <properties>
+                <altReleaseDeploymentRepository>
+                    nexus-releases::${COMPANY_NEXUS_URL}/nexus/repository/maven-releases/
+                </altReleaseDeploymentRepository>
+                <altSnapshotDeploymentRepository>
+                    nexus-snapshots::${COMPANY_NEXUS_URL}/nexus/repository/maven-snapshots/
+                </altSnapshotDeploymentRepository>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>nexus-releases</id>
+                    <url>${COMPANY_NEXUS_URL}/nexus/content/groups/public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>company</activeProfile>
+    </activeProfiles>
+</settings>

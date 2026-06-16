@@ -1,0 +1,33 @@
+[core]
+  editor = vim
+  pager = cat
+  autocrlf = input
+  eol = lf
+  safecrlf = false
+  untrackedCache = true
+  excludesfile = ~/.config/git/ignore
+
+[rebase]
+  autosquash = true
+[init]
+  defaultBranch = main
+[pull]
+  ff = only
+[rerere]
+  enabled = true
+[http]
+  postBuffer = 5242880000
+  proxy = ${GIT_HTTP_PROXY}
+[https]
+  proxy = ${GIT_HTTPS_PROXY}
+[credential]
+  helper = osxkeychain
+[safe]
+  directory = *
+
+[user]
+  name = ${GITHUB_USERNAME}
+  email = ${GITHUB_EMAIL}
+
+[includeIf "gitdir:~/work/"]
+  path = ~/.gitconfig_work

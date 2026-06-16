@@ -16,4 +16,8 @@
 Thumbs.db
 /Brewfile.lock.json
 
-.gitconfig-work
+# local secrets (never commit decrypted)
+/secrets.env
+.zshenv.local
+.zshrc.local
+*.backup.*

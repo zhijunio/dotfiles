@@ -1,0 +1,3 @@
+[user]
+  name = ${COMPANY_USERNAME}
+  email = ${COMPANY_EMAIL}

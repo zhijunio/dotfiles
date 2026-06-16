@@ -1,27 +1,9 @@
-# =============================================================================
-# Zsh Configuration
-# Powered by Sheldon Plugin Manager
-# =============================================================================
-
 # -----------------------------------------------------------------------------
-# 基础环境变量
+# 用户配置（aliases, secrets, functions）
 # -----------------------------------------------------------------------------
-export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/brew.git"
-export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.aliyun.com/homebrew/homebrew-core.git"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.aliyun.com/homebrew-bottles"
-
-# Homebrew 路径设置
-if [[ -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -x /usr/local/bin/brew ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
-
-# -----------------------------------------------------------------------------
-# 用户配置（aliases, myrc, functions）
-# -----------------------------------------------------------------------------
+[[ -f ~/.secrets/env ]] && source ~/.secrets/env
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 [[ -f ~/.zsh_aliases ]] && source ~/.zsh_aliases
-[[ -f ~/.myrc ]] && source ~/.myrc
 [[ -f ~/.zsh_functions ]] && source ~/.zsh_functions
 
 # -----------------------------------------------------------------------------
@@ -56,28 +38,21 @@ case ":${PATH}:" in
   *) export PATH="${PNPM_HOME}:${PATH}" ;;
 esac
 
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+
 # -----------------------------------------------------------------------------
 # OrbStack (可选，未安装则忽略)
 # -----------------------------------------------------------------------------
 [[ -f "${HOME}/.orbstack/shell/init.zsh" ]] && source "${HOME}/.orbstack/shell/init.zsh"
 
-# -----------------------------------------------------------------------------
-# Sheldon 插件管理器
-# https://sheldon.cli.rs
-# -----------------------------------------------------------------------------
-# 注意：sheldon source 会设置 fpath 和 source 插件
-if command -v sheldon >/dev/null 2>&1; then
-  eval "$(command sheldon source)"
-fi
+# Shell 插件与 Starship 由 Kaku 内置 Shell Suite 提供（kaku init / TERM_PROGRAM=Kaku）
 
 # -----------------------------------------------------------------------------
 # Zsh 补全初始化
 # -----------------------------------------------------------------------------
-# autoload 必须在 fpath 设置之后调用
 autoload -Uz compinit
 
-# 跳过 insecure directories 检查
-# 原因：Sheldon 克隆的插件目录在 ~/.local/share/sheldon/
 zmodload zsh/datetime
 if [[ -f ~/.zcompdump-$ZSH_VERSION ]]; then
   compinit -C -d ~/.zcompdump-$ZSH_VERSION
@@ -106,10 +81,3 @@ setopt SHARE_HISTORY           # 多会话共享历史
 setopt APPEND_HISTORY          # 追加模式
 setopt INC_APPEND_HISTORY      # 立即写入
 setopt EXTENDED_HISTORY        # 保存时间戳
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
-
-
-export HTTP_PROXY=http://127.0.0.1:7890
-export HTTPS_PROXY=http://127.0.0.1:7890
-export ALL_PROXY=socks5h://127.0.0.1:7898
