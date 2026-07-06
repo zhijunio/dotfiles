@@ -7,8 +7,6 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SECRETS_DIR="$HOME/.secrets"
-SECRETS_ENV="${SECRETS_ENV:-$SECRETS_DIR/env}"
 
 info() { printf ' [ .. ] %s\n' "$1"; }
 ok() { printf ' [ \033[32mOK\033[0m ] %s\n' "$1"; }
@@ -55,7 +53,6 @@ setup_macos() {
   sudo scutil --set LocalHostName "$COMPUTER_NAME"
   sudo systemsetup -settimezone "$TIMEZONE"
 
-  sudo pwpolicy -clearaccountpolicies || warn "pwpolicy skipped"
   defaults write NSGlobalDomain KeyRepeat -int 1
   defaults write NSGlobalDomain InitialKeyRepeat -int 10
   defaults write NSGlobalDomain AppleShowScrollBars -string "WhenScrolling"
@@ -77,7 +74,7 @@ setup_macos() {
 
 trust_homebrew_taps() {
   local tap
-  for tap in sdkman/tap anomalyco/tap caezium/tap farion1231/ccswitch tw93/tap; do
+  for tap in sdkman/tap farion1231/ccswitch; do
     brew tap "$tap" 2>/dev/null || true
     brew trust --tap "$tap" 2>/dev/null || warn "could not trust tap $tap"
   done
