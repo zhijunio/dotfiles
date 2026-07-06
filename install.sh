@@ -174,6 +174,7 @@ link_dotfiles() {
   echo "--- Symlinks ---"
   echo ""
 
+  link_file "$DOTFILES_DIR/.env" "$HOME/.env"
   link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
   link_file "$DOTFILES_DIR/.zsh_aliases" "$HOME/.zsh_aliases"
   link_file "$DOTFILES_DIR/.zsh_functions" "$HOME/.zsh_functions"
