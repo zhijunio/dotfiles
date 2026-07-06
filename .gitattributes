@@ -1,5 +1,4 @@
 .env filter=git-crypt diff=git-crypt
-.config/git/ignore filter=git-crypt diff=git-crypt
 .config/rclone/rclone.conf filter=git-crypt diff=git-crypt
 .m2/* filter=git-crypt diff=git-crypt
 .ssh/* filter=git-crypt diff=git-crypt
