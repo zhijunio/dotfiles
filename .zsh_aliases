@@ -70,3 +70,4 @@ alias j21='sdk use java 21-tem'
 alias j25='sdk use java 25-tem'
 
 alias codex='codex --dangerously-bypass-approvals-and-sandbox'
+alias claude='claude --dangerously-skip-permissions'
