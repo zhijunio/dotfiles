@@ -26,6 +26,7 @@ exec zsh -l
 | `.zsh_functions` | 自定义函数：Yazi 集成、端口查杀、Docker 清理、Git 工作流 |
 | `.gitconfig` | 全局 Git 配置：vim 编辑器、代理、autosquash、rerere |
 | `.gitconfig_work` | 工作 Git 身份（按目录条件 include） |
+| `.wakatime.cfg` | WakaTime API 密钥 |
 | `.config/git/ignore` | 全局 gitignore（语言/编辑器/系统通用规则） |
 | `.gitattributes` | git-crypt 加密声明 |
 | `.editorconfig` | 跨编辑器格式约定（UTF-8、LF、缩进） |
@@ -69,6 +70,7 @@ exec zsh -l
 | `.config/rclone/rclone.conf` | Rclone 云存储配置 |
 | `.m2/settings.xml` | Maven 镜像/仓库配置 |
 | `.gitconfig_work` | 工作 Git 身份 |
+| `.wakatime.cfg` | WakaTime API 密钥 |
 
 仓库已用 git-crypt 初始化，采用**对称密钥**模式。
 

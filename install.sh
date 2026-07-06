@@ -5,6 +5,8 @@
 #   cd ~/.dotfiles && ./install.sh
 #
 set -euo pipefail
+  link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
+  link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -177,6 +179,8 @@ link_dotfiles() {
   link_file "$DOTFILES_DIR/.zsh_functions" "$HOME/.zsh_functions"
   link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
   link_file "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
+  link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
+  link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
 
   link_file "$DOTFILES_DIR/.config/rclone/rclone.conf" "$HOME/.config/rclone/rclone.conf"
   link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"

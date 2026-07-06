@@ -4,3 +4,4 @@
 .ssh/* filter=git-crypt diff=git-crypt
 .gitconfig filter=git-crypt diff=git-crypt
 .gitconfig_work filter=git-crypt diff=git-crypt
+.wakatime.cfg filter=git-crypt diff=git-crypt
