@@ -1,4 +1,3 @@
-# Early environment (login + interactive). Keep machine-specific paths in ~/.zshenv.local
 export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
 export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
 export HOMEBREW_PIP_INDEX_URL="https://pypi.mirrors.ustc.edu.cn/simple"
@@ -9,4 +8,6 @@ elif [[ -x /usr/local/bin/brew ]]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
 
-[[ -f "${ZDOTDIR:-$HOME}/.zshenv.local" ]] && source "${ZDOTDIR:-$HOME}/.zshenv.local"
+export PATH="/Users/zhijunio/.local/share/fnm/node-versions/v24.15.0/installation/bin:$PATH"
+
+export CODEX_HOME=/Users/zhijunio/.codex

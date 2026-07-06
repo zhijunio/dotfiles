@@ -1,10 +1,11 @@
 # -----------------------------------------------------------------------------
-# 用户配置（aliases, secrets, functions）
+# 用户配置（aliases, functions）
 # -----------------------------------------------------------------------------
-[[ -f ~/.secrets/env ]] && source ~/.secrets/env
+[[ -f ~/.env ]] && source ~/.env
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 [[ -f ~/.zsh_aliases ]] && source ~/.zsh_aliases
 [[ -f ~/.zsh_functions ]] && source ~/.zsh_functions
+[[ -f ~/.zshenv ]] && source ~/.zshenv
 
 # -----------------------------------------------------------------------------
 # SDKMAN (brew: tap sdkman/tap && brew install sdkman-cli)
@@ -45,8 +46,6 @@ export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 # OrbStack (可选，未安装则忽略)
 # -----------------------------------------------------------------------------
 [[ -f "${HOME}/.orbstack/shell/init.zsh" ]] && source "${HOME}/.orbstack/shell/init.zsh"
-
-# Shell 插件与 Starship 由 Kaku 内置 Shell Suite 提供（kaku init / TERM_PROGRAM=Kaku）
 
 # -----------------------------------------------------------------------------
 # Zsh 补全初始化

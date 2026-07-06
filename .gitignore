@@ -16,10 +16,3 @@
 Thumbs.db
 /Brewfile.lock.json
 /brew-bundle.log
-
-# local secrets (never commit)
-/secrets.env
-.zshenv.local
-.zshrc.local
-*.backup.*
-*.age

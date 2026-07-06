@@ -61,6 +61,12 @@ alias python=python3
 # Dotfiles sync
 alias dot='cd ~/.dotfiles'
 
-alias venv='vim ~/.secrets/env'
+alias edit_env='vim ~/.env'
 
 alias reload_rc='source ~/.zshrc'
+
+alias j8='sdk use java 8.0.482-zulu'
+alias j21='sdk use java 21-tem'
+alias j25='sdk use java 25-tem'
+
+alias codex='codex --dangerously-bypass-approvals-and-sandbox'

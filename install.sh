@@ -37,22 +37,6 @@ link_file() {
   ok "$dst -> $src"
 }
 
-setup_secrets_dir() {
-  if [[ ! -d "$SECRETS_DIR" ]]; then
-    mkdir -p "$SECRETS_DIR"
-    chmod 700 "$SECRETS_DIR"
-    ok "Created $SECRETS_DIR"
-  else
-    ok "$SECRETS_DIR already exists"
-  fi
-
-  if [[ ! -f "$SECRETS_ENV" ]]; then
-    warn "$SECRETS_ENV not found"
-    echo "  cp \"$DOTFILES_DIR/templates/secrets.env.example\" \"$SECRETS_ENV\""
-    echo "  chmod 600 \"$SECRETS_ENV\""
-  fi
-}
-
 setup_macos() {
   if [[ "$(uname -s)" != "Darwin" ]]; then
     return 0
@@ -191,35 +175,17 @@ link_dotfiles() {
   echo "--- Symlinks ---"
   echo ""
 
-  link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
   link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
   link_file "$DOTFILES_DIR/.zsh_aliases" "$HOME/.zsh_aliases"
   link_file "$DOTFILES_DIR/.zsh_functions" "$HOME/.zsh_functions"
+  link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
+  link_file "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
 
-  link_file "$DOTFILES_DIR/config/kaku/kaku.lua" "$HOME/.config/kaku/kaku.lua"
-  link_file "$DOTFILES_DIR/config/git/ignore" "$HOME/.config/git/ignore"
-  link_file "$DOTFILES_DIR/config/gh/config.yml" "$HOME/.config/gh/config.yml"
-  link_file "$DOTFILES_DIR/config/ssh/config" "$HOME/.ssh/config"
-  link_file "$DOTFILES_DIR/ssh/id_ed25519.pub" "$HOME/.ssh/id_ed25519.pub"
-}
-
-sync_secrets() {
-  if [[ -f "$SECRETS_ENV" ]]; then
-    bash "$DOTFILES_DIR/sync-secrets.sh"
-  else
-    warn "Skipped sync-secrets.sh ($SECRETS_ENV missing)"
-  fi
-}
-
-source_secrets_env() {
-  if [[ ! -f "$SECRETS_ENV" ]]; then
-    return 0
-  fi
-  set -a
-  # shellcheck disable=SC1090
-  source "$SECRETS_ENV"
-  set +a
-  ok "Sourced $SECRETS_ENV"
+  link_file "$DOTFILES_DIR/.config/rclone/rclone.conf" "$HOME/.config/rclone/rclone.conf"
+  link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
+  link_file "$DOTFILES_DIR/.m2/settings.xml" "$HOME/.m2/settings.xml"
+  link_file "$DOTFILES_DIR/.ssh/id_ed25519.pub" "$HOME/.ssh/id_ed25519.pub"
+  link_file "$DOTFILES_DIR/.ssh/id_ed25519" "$HOME/.ssh/id_ed25519"
 }
 
 set_default_shell() {
@@ -239,10 +205,7 @@ main() {
   setup_macos
   setup_homebrew
   setup_sdkman
-  setup_secrets_dir
   link_dotfiles
-  sync_secrets
-  source_secrets_env
   setup_ssh
   set_default_shell
 

@@ -1,7 +1,3 @@
-# -----------------------------------------------------------------------------
-# 自定义函数
-# -----------------------------------------------------------------------------
-
 # Yazi 文件管理器
 function y() {
     local cwd
@@ -96,6 +92,25 @@ function docker_cleanup() {
   docker network prune --force
 
   echo "Docker cleanup completed!"
+}
+
+function clean_idea() {
+    echo "🧹 Cleaning IntelliJ IDEA..."
+
+    rm -rf "/Applications/IntelliJ IDEA.app"
+    rm -rf ~/Library/Application\ Support/JetBrains/
+    rm -rf ~/Library/Preferences/com.apple.java.util.prefs.plist
+    rm -rf ~/Library/Preferences/com.jetbrains*
+    rm -rf ~/Library/Preferences/jetbrains*
+    rm -rf ~/Library/Caches/JetBrains
+    rm -rf ~/Library/Logs/JetBrains/
+    rm -rf ~/Library/Saved\ Application\ State/com.jetbrains.intellij.savedState/
+    rm -rf ~/.cache/JetBrains/
+    rm -rf ~/.config/JetBrains/
+
+    killall cfprefsd 2>/dev/null || true
+
+    echo "✅ IntelliJ IDEA cleaned successfully"
 }
 
 # 清理构建产物
