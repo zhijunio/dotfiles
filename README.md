@@ -27,6 +27,7 @@ exec zsh -l
 | `.functions` | 自定义函数：Yazi 集成、端口查杀、Docker 清理、Git 工作流 |
 | `.gitconfig` | 全局 Git 配置：vim 编辑器、代理、autosquash、rerere |
 | `.gitconfig_work` | 工作 Git 身份（按目录条件 include） |
+| `config/gh/config.yml` | GitHub CLI 配置：git protocol、pager、aliases |
 | `.wakatime.cfg` | WakaTime API 密钥 |
 | `.config/git/ignore` | 全局 gitignore（语言/编辑器/系统通用规则） |
 | `.gitattributes` | git-crypt 加密声明 |

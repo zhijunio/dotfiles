@@ -168,14 +168,14 @@ link_dotfiles() {
   link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
   link_file "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
   link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
-  link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
+  link_file "$DOTFILES_DIR/.config/gh/config.yml" "$HOME/.config/gh/config.yml"
   link_file "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
-
   link_file "$DOTFILES_DIR/.config/rclone/rclone.conf" "$HOME/.config/rclone/rclone.conf"
   link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
   link_file "$DOTFILES_DIR/.m2/settings.xml" "$HOME/.m2/settings.xml"
   link_file "$DOTFILES_DIR/.ssh/id_ed25519.pub" "$HOME/.ssh/id_ed25519.pub"
   link_file "$DOTFILES_DIR/.ssh/id_ed25519" "$HOME/.ssh/id_ed25519"
+  link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
 }
 
 set_default_shell() {
