@@ -1,9 +1,11 @@
-
-# Enhanced ls aliases with colors and optional eza support
+# -----------------------------------------------------------------------------
+# Listing
+# -----------------------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then
   alias ls='eza'
   alias ll='eza -alF'
   alias la='eza -a'
+  alias l='eza -CF'
   alias tree='eza --tree'
 else
   alias ll='ls -alF --color=auto'
@@ -11,48 +13,112 @@ else
   alias l='ls -CF --color=auto'
 fi
 
-# Conditional Tool Aliases
-# Only create aliases if tools exist
+# -----------------------------------------------------------------------------
+# Kubernetes
+# -----------------------------------------------------------------------------
 if command -v kubectl >/dev/null 2>&1; then
   alias k='kubectl'
+  alias kg='kubectl get'
+  alias kd='kubectl describe'
+  alias kl='kubectl logs'
+  alias kdel='kubectl delete'
 fi
 
 if command -v kubectx >/dev/null 2>&1; then
   alias kx='kubectx'
 fi
 
+# -----------------------------------------------------------------------------
+# Process / system
+# -----------------------------------------------------------------------------
 if command -v btop >/dev/null 2>&1; then
   alias top='btop'
 elif command -v htop >/dev/null 2>&1; then
   alias top='htop'
 fi
 
-# 目录跳转
+# -----------------------------------------------------------------------------
+# Navigation
+# -----------------------------------------------------------------------------
 alias ..="cd .."
 alias ...="cd ../.."
 alias ....="cd ../../.."
 alias .....="cd ../../../.."
 
-# Git Aliases
+# -----------------------------------------------------------------------------
+# Git
+# -----------------------------------------------------------------------------
 alias g='git'
 alias ga="git add ."
 alias gb="git branch"
 alias gc="git commit"
+alias gca="git commit --amend --no-edit"
+alias gcm="git commit -m"
 alias gcl="git clone"
 alias gco="git checkout"
+alias gdc="git diff --cached"
+alias gdf="git diff"
+alias gbrc="git branch --show-current"
+alias gl1="git log -1 --stat"
 alias gs='git status --short --branch'
+alias gsw='git switch'
+alias gswc='git switch -c'
 alias gp="git pull"
 alias gg="git push"
+alias grv="git remote -v"
 alias gl="git log --oneline --graph --decorate --all"
 
-# Grep Aliases
+# -----------------------------------------------------------------------------
+# GitHub CLI
+# -----------------------------------------------------------------------------
+if command -v gh >/dev/null 2>&1; then
+  alias pr='gh pr'
+  alias prs='gh pr status'
+  alias prv='gh pr view'
+  alias prc='gh pr checkout'
+  alias pri='gh pr create'
+  alias gi='gh issue'
+  alias gil='gh issue list'
+  alias gic='gh issue create'
+  alias repo='gh repo'
+  alias rel='gh release'
+fi
+
+# -----------------------------------------------------------------------------
+# Docker
+# -----------------------------------------------------------------------------
+if command -v docker >/dev/null 2>&1; then
+  alias d='docker'
+  alias dps='docker ps'
+  alias dpa='docker ps -a'
+  alias di='docker images'
+  alias dlog='docker logs'
+  alias dexec='docker exec -it'
+  alias dstop='docker stop'
+  alias drm='docker rm'
+fi
+
+# -----------------------------------------------------------------------------
+# Homebrew
+# -----------------------------------------------------------------------------
+if command -v brew >/dev/null 2>&1; then
+  alias bi='brew install'
+  alias bu='brew uninstall'
+  alias bl='brew list'
+  alias bs='brew search'
+  alias bt='brew tap'
+  alias bun='brew untap'
+  alias bup='brew update && brew upgrade'
+fi
+
+# -----------------------------------------------------------------------------
+# Text / date / editor
+# -----------------------------------------------------------------------------
 alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
 
-# Date/Time Aliases
 alias now='date +"%T"'
-alias nowtime=now
 alias nowdate='date +"%d-%m-%Y"'
 alias nowsec='date +"%s"'
 
@@ -60,8 +126,11 @@ alias python=python3
 alias dot='cd ~/.dotfiles'
 alias edit_env='vim ~/.env'
 alias edit_m2='vim ~/.m2/settings.xml'
-alias reload_rc='source ~/.zshrc'
+alias reload_shell='exec zsh -l'
 
+# -----------------------------------------------------------------------------
+# Runtime switching
+# -----------------------------------------------------------------------------
 alias j8='mise shell java@zulu-8'
 alias j21='mise shell java@21'
 alias j25='mise shell java@25'

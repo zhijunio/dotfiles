@@ -21,7 +21,7 @@ exec zsh -l
 | `install.sh` | 一键引导脚本：macOS 系统优化 → Homebrew → mise → SSH → Symlink |
 | `Brewfile` | 50+ 包声明：CLI 工具、语言运行时、GUI 应用、npm 包 |
 | `.zprofile` | 登录 shell：Homebrew shellenv、登录期 PATH |
-| `.zshrc` | Zsh 主配置：加载 alias/function/env，初始化 mise/OrbStack/补全 |
+| `.zshrc` | Zsh 主配置：加载 alias/function/env，初始化 mise/pure/OrbStack/补全 |
 | `.zshenv` | 环境变量：Homebrew USTC 镜像、CODEX_HOME |
 | `.aliases` | Git / 目录导航 / 文件管理 / Java 版本切换 / K8s 等别名 |
 | `.functions` | 自定义函数：Yazi 集成、端口查杀、Docker 清理、Git 工作流 |
@@ -57,6 +57,7 @@ zsh -l
       ├── .functions
       ├── .zshenv
       ├── mise → Node / pnpm / Python / Java
+      ├── pure → prompt
       ├── OrbStack (Docker 替代)
       └── Zsh 补全 & 历史优化
 ```

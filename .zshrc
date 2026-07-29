@@ -43,6 +43,17 @@ if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
 fi
 
+pure_path="$(npm root -g 2>/dev/null)/pure-prompt"
+if [[ -d "$pure_path" ]]; then
+  fpath+=("$pure_path")
+  autoload -U promptinit
+  promptinit
+  export PURE_GIT_PULL=0
+  export PURE_CMD_MAX_EXEC_TIME=999999
+  zstyle ':prompt:pure:path:separator' dim yes
+  prompt pure
+fi
+
 # -----------------------------------------------------------------------------
 # OrbStack (可选，未安装则忽略)
 # -----------------------------------------------------------------------------
