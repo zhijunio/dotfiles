@@ -16,22 +16,22 @@ exec zsh -l
 
 ## 项目结构
 
-| 目录/文件 | 说明 |
-|-----------|------|
-| `install.sh` | 一键引导脚本：macOS 系统优化 → Homebrew → mise → SSH → Symlink |
-| `Brewfile` | 50+ 包声明：CLI 工具、语言运行时、GUI 应用、npm 包 |
-| `.zprofile` | 登录 shell：Homebrew shellenv、登录期 PATH |
-| `.zshrc` | Zsh 主配置：加载 alias/function/env，初始化 mise/pure/OrbStack/补全 |
-| `.zshenv` | 环境变量：Homebrew USTC 镜像、CODEX_HOME |
-| `.aliases` | Git / 目录导航 / 文件管理 / Java 版本切换 / K8s 等别名 |
-| `.functions` | 自定义函数：Yazi 集成、端口查杀、Docker 清理、Git 工作流 |
-| `.gitconfig` | 全局 Git 配置：vim 编辑器、代理、autosquash、rerere |
-| `.gitconfig_work` | 工作 Git 身份（按目录条件 include） |
-| `config/gh/config.yml` | GitHub CLI 配置：git protocol、pager、aliases |
-| `.wakatime.cfg` | WakaTime API 密钥 |
-| `.config/git/ignore` | 全局 gitignore（语言/编辑器/系统通用规则） |
-| `.gitattributes` | git-crypt 加密声明 |
-| `.editorconfig` | 跨编辑器格式约定（UTF-8、LF、缩进） |
+| 目录/文件               | 说明 |
+|-------------------------|------|
+| `install.sh`            | 一键引导脚本：macOS 系统优化 → Homebrew → mise → SSH → Symlink |
+| `Brewfile`              | 50+ 包声明：CLI 工具、语言运行时、GUI 应用、npm 包 |
+| `.zprofile`             | 登录 shell：Homebrew shellenv、登录期 PATH |
+| `.zshrc`                | Zsh 主配置：加载 alias/function/env，初始化 mise/pure/OrbStack/补全 |
+| `.zshenv`               | 环境变量：Homebrew USTC 镜像、CODEX_HOME |
+| `.aliases`              | Git / 目录导航 / 文件管理 / Java 版本切换 / K8s 等别名 |
+| `.functions`            | 自定义函数：Yazi 集成、端口查杀、Docker 清理、Git 工作流 |
+| `.gitconfig`            | 全局 Git 配置：vim 编辑器、代理、autosquash、rerere |
+| `.gitconfig_work`       | 工作 Git 身份（按目录条件 include） |
+| `.config/gh/config.yml` | GitHub CLI 配置：git protocol、pager、aliases |
+| `.wakatime.cfg`         | WakaTime API 密钥 |
+| `.config/git/ignore`    | 全局 gitignore（语言/编辑器/系统通用规则） |
+| `.gitattributes`        | git-crypt 加密声明 |
+| `.editorconfig`         | 跨编辑器格式约定（UTF-8、LF、缩进） |
 
 ## 安装脚本详解
 
@@ -158,24 +158,6 @@ JVM 参数：`-Xms1g -Xmx1g -XX:+UseG1GC`。
 - 生产力：feishu, wechat, wetype, typora, intellij-idea
 
 完整列表见 [`Brewfile`](Brewfile)。
-
-## 日常维护
-
-```bash
-dot                          # cd 到 dotfiles 目录
-dotpush "chore: update"      # 提交并推送（含默认 commit message）
-dotpull                      # 拉取 dotfiles 更新
-reload_rc                    # 重新加载 .zshrc
-
-# Git 工作流
-gpo                          # git push origin <当前分支>
-gmp                          # 切到 main/master 并 pull
-gtp                          # 从 main 创建 CalVer tag (vYY.MM.N) 并推送
-
-# 构建产物清理（支持 dry-run）
-build_cleanup                # 清除 node_modules/target/dist/__pycache__ 等
-build_cleanup -n             # 预览要删除的目录
-```
 
 ## 环境变量
 
