@@ -1,22 +1,20 @@
+tap "anomalyco/tap", trusted: true
+tap "can1357/tap"
 tap "farion1231/ccswitch", trusted: true
-tap "sdkman/tap", trusted: true
-tap "stablyai/orca", trusted: { casks: ["orca"] }
+tap "go-task/tap"
+tap "muxy-app/tap"
 # Command-line client tool for Alibaba aDrive disk
 brew "aliyunpan"
 # Bourne-Again SHell, a UNIX command interpreter
 brew "bash"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
-# Embeddable SQL OLAP Database Management System
-brew "duckdb"
 # Modern, maintained replacement for ls
 brew "eza"
 # Like neofetch, but much faster because written mostly in C
 brew "fastfetch"
 # Simple, fast and user-friendly alternative to find
 brew "fd"
-# Fast and simple Node.js version manager
-brew "fnm"
 # Command-line fuzzy finder written in Go
 brew "fzf"
 # GitHub command-line tool
@@ -37,22 +35,25 @@ brew "jbang"
 brew "jq"
 # Handy way to save and run project-specific commands
 brew "just"
+# Postgres C API library
+brew "libpq"
 # Library to render SVG files using Cairo
 brew "librsvg"
+# Tool for working with usage-spec CLIs
+brew "usage"
+# Polyglot runtime manager (asdf rust clone)
+brew "mise"
 # Deep clean and optimize your Mac
 brew "mole"
 # Open source relational database management system
 brew "mysql-client"
-# Open-source, cross-platform JavaScript runtime environment
-brew "node"
+# Tools for one-time password authentication systems
+brew "oath-toolkit"
 # Swiss-army knife of markup format conversion
 brew "pandoc"
 # Interpreted, interactive, object-oriented programming language
-brew "python@3.14"
 # Execute binaries from Python packages in isolated environments
-brew "pipx"
 # Fast, disk space efficient package manager
-brew "pnpm"
 # PDF rendering library (based on the xpdf-3.0 code base)
 brew "poppler"
 # Rsync for cloud storage
@@ -81,8 +82,12 @@ brew "yq"
 brew "zoxide"
 # UNIX shell (command interpreter)
 brew "zsh"
-# SDKMAN! the Software Development Kit Manager
-brew "sdkman/tap/sdkman-cli", trusted: true
+# The AI coding agent built for the terminal.
+brew "anomalyco/tap/opencode", trusted: true
+# Coding agent with the IDE wired in
+brew "can1357/tap/omp", trusted: true
+# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
+brew "go-task/tap/go-task", trusted: true
 # Password manager that keeps all passwords secure behind one password
 cask "1password"
 # Telegram client with ghost mode and message history
@@ -111,6 +116,8 @@ cask "google-chrome"
 cask "insomnia"
 # Java IDE by JetBrains
 cask "intellij-idea"
+# Terminal multiplexer for macOS
+cask "muxy-app/tap/muxy", trusted: true
 # Replacement for Docker Desktop
 cask "orbstack"
 # App to switch hosts
@@ -123,6 +130,8 @@ cask "typora"
 cask "wechat"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
+npm "@bitkyc08/opencodex"
 npm "@larksuite/cli"
+npm "bcryptjs"
 npm "corepack"
-npm "firecrawl-cli"
+npm "opencode-ai"

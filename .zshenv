@@ -1,13 +1,9 @@
-export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
-export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
-export HOMEBREW_PIP_INDEX_URL="https://pypi.mirrors.ustc.edu.cn/simple"
+# -----------------------------------------------------------------------------
+# zshenv: 所有 zsh 进程都要读取的最小全局变量
+# -----------------------------------------------------------------------------
+[[ -f ~/.env ]] && source ~/.env
 
-if [[ -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -x /usr/local/bin/brew ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
-fi
-
-export PATH="/Users/zhijunio/.local/share/fnm/node-versions/v24.15.0/installation/bin:$PATH"
+export JAVA_OPTS="-Xms1g -Xmx1g -XX:+UseG1GC -XX:+UseStringDeduplication"
+export MAVEN_OPTS="-Xms1g -Xmx4g -XX:+TieredCompilation -XX:TieredStopAtLevel=1"
 
 export CODEX_HOME=/Users/zhijunio/.codex

@@ -5,8 +5,6 @@
 #   cd ~/.dotfiles && ./install.sh
 #
 set -euo pipefail
-  link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
-  link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -74,14 +72,6 @@ setup_macos() {
   killall Finder 2>/dev/null || true
 }
 
-trust_homebrew_taps() {
-  local tap
-  for tap in sdkman/tap farion1231/ccswitch; do
-    brew tap "$tap" 2>/dev/null || true
-    brew trust --tap "$tap" 2>/dev/null || warn "could not trust tap $tap"
-  done
-}
-
 setup_homebrew() {
   export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
   export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
@@ -103,8 +93,6 @@ setup_homebrew() {
     echo "未找到 brew，请检查安装日志。" >&2
     exit 1
   fi
-
-  trust_homebrew_taps
 
   local brewfile="${DOTFILES_DIR}/Brewfile"
   local bundle_log="${DOTFILES_DIR}/brew-bundle.log"
@@ -138,18 +126,16 @@ setup_homebrew() {
   ok "brew bundle done (see $bundle_log)"
 }
 
-setup_sdkman() {
-  local _sdkman_prefix
-  _sdkman_prefix="$(brew --prefix sdkman-cli 2>/dev/null)" || return 0
-  export SDKMAN_DIR="${_sdkman_prefix}/libexec"
-  # shellcheck disable=SC1091
-  [[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
-  export SDKMAN_AUTO_ANSWER=true
-  sdk install java 25-tem || true
-  sdk install java 21-tem || true
-  sdk install java 8.0.482-zulu || true
-  sdk use java 8.0.482-zulu || true
-  sdk install maven || true
+setup_mise() {
+  if ! command -v mise >/dev/null 2>&1; then
+    warn "mise not found; skip installing toolchain versions"
+    return 0
+  fi
+
+  (
+    cd "$DOTFILES_DIR"
+    mise install -y
+  )
 }
 
 setup_ssh() {
@@ -175,13 +161,15 @@ link_dotfiles() {
   echo ""
 
   link_file "$DOTFILES_DIR/.env" "$HOME/.env"
+  link_file "$DOTFILES_DIR/.zprofile" "$HOME/.zprofile"
   link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
-  link_file "$DOTFILES_DIR/.zsh_aliases" "$HOME/.zsh_aliases"
-  link_file "$DOTFILES_DIR/.zsh_functions" "$HOME/.zsh_functions"
+  link_file "$DOTFILES_DIR/.aliases" "$HOME/.aliases"
+  link_file "$DOTFILES_DIR/.functions" "$HOME/.functions"
   link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
   link_file "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
   link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
   link_file "$DOTFILES_DIR/.wakatime.cfg" "$HOME/.wakatime.cfg"
+  link_file "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
 
   link_file "$DOTFILES_DIR/.config/rclone/rclone.conf" "$HOME/.config/rclone/rclone.conf"
   link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
@@ -206,20 +194,10 @@ main() {
 
   setup_macos
   setup_homebrew
-  setup_sdkman
   link_dotfiles
+  setup_mise
   setup_ssh
   set_default_shell
-
-  local zshrc_local="$HOME/.zshrc.local"
-  if [[ ! -f "$zshrc_local" ]] || ! grep -q '^export DOTFILES_DIR=' "$zshrc_local" 2>/dev/null; then
-    {
-      echo "# Machine-specific zsh overrides (not committed)"
-      echo "export DOTFILES_DIR=\"$DOTFILES_DIR\""
-    } >> "$zshrc_local"
-    chmod 600 "$zshrc_local"
-    ok "updated $zshrc_local (DOTFILES_DIR)"
-  fi
 
   echo ""
   echo "Done."

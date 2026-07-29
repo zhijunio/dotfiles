@@ -1,12 +1,21 @@
+# AI CLI wrappers
+codex() {
+  command codex --dangerously-bypass-approvals-and-sandbox "$@"
+}
+
+claude() {
+  command claude --dangerously-skip-permissions "$@"
+}
+
 # Yazi 文件管理器
 function y() {
-    local cwd
-    cwd=$(mktemp -t "yazi-cwd.XXXXXX")
-    yazi "$@" --cwd-file="$cwd"
-    if cwd=$(cat -- "$cwd") && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+    local cwd_file cwd
+    cwd_file=$(mktemp -t "yazi-cwd.XXXXXX")
+    yazi "$@" --cwd-file="$cwd_file"
+    if cwd=$(cat -- "$cwd_file") && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
         cd -- "$cwd"
     fi
-    rm -f -- "$cwd"
+    rm -f -- "$cwd_file"
 }
 
 # 快速创建文件
@@ -43,7 +52,7 @@ function extract() {
 }
 
 # 查找并进入目录
-function fd() {
+function cdf() {
     cd "$(find . -type d -name "*$1*" | head -1)"
 }
 
