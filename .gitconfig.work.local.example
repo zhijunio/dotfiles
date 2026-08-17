@@ -1,0 +1,6 @@
+# Work identity used for repositories under ~/work/.
+# Uncomment and replace both values after the installer creates
+# ~/.gitconfig.work.local.
+#[user]
+#  name = Your Work Name
+#  email = you@company.example

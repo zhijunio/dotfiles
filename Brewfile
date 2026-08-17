@@ -62,6 +62,8 @@ brew "rclone"
 brew "ripgrep"
 # Intuitive find & replace CLI
 brew "sd"
+# Cross-shell prompt
+brew "starship"
 # Official tldr client written in Rust
 brew "tlrc"
 # Extremely fast Python package installer and resolver, written in Rust
@@ -88,8 +90,6 @@ brew "anomalyco/tap/opencode", trusted: true
 brew "can1357/tap/omp", trusted: true
 # A fast, cross-platform build tool inspired by Make, designed for modern workflows.
 brew "go-task/tap/go-task", trusted: true
-# Password manager that keeps all passwords secure behind one password
-cask "1password"
 # Telegram client with ghost mode and message history
 cask "ayugram"
 # Cloud storage service
@@ -133,6 +133,3 @@ cask "wetype"
 npm "@bitkyc08/opencodex"
 npm "@larksuite/cli"
 npm "bcryptjs"
-npm "corepack"
-npm "pure-prompt"
-npm "opencode-ai"

@@ -35,6 +35,19 @@ link_file() {
   ok "$dst -> $src"
 }
 
+copy_file_if_missing() {
+  local src="$1" dst="$2"
+  mkdir -p "$(dirname "$dst")"
+
+  if [[ -e "$dst" || -L "$dst" ]]; then
+    info "Preserving existing $dst"
+    return
+  fi
+
+  cp "$src" "$dst"
+  ok "$dst created from template"
+}
+
 setup_macos() {
   if [[ "$(uname -s)" != "Darwin" ]]; then
     return 0
@@ -138,6 +151,51 @@ setup_mise() {
   )
 }
 
+link_mise_jdks() {
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return 0
+  fi
+
+  if ! command -v mise >/dev/null 2>&1; then
+    warn "mise not found; skip linking JDKs"
+    return 0
+  fi
+
+  local mise_java_dir="$HOME/.local/share/mise/installs/java"
+  local jvm_dir="/Library/Java/JavaVirtualMachines"
+
+  # Map: mise version dir -> symlink name
+  local -A jdk_links=(
+    ["zulu-8.96.0.19"]="zulu-8.jdk"
+    ["21.0.2"]="openjdk-21.jdk"
+    ["25.0.2"]="openjdk-25.jdk"
+  )
+
+  for version in "${!jdk_links[@]}"; do
+    local src="${mise_java_dir}/${version}"
+    local dst="${jvm_dir}/${jdk_links[$version]}"
+
+    if [[ ! -d "$src" ]]; then
+      warn "JDK not installed: $src (run 'mise install' first)"
+      continue
+    fi
+
+    if [[ -L "$dst" ]] && [[ "$(readlink "$dst")" == "$src" ]]; then
+      ok "$dst already linked"
+      continue
+    fi
+
+    info "Linking $dst -> $src"
+    sudo ln -sfn "$src" "$dst"
+    ok "$dst -> $src"
+  done
+
+  info "Verifying /usr/libexec/java_home..."
+  /usr/libexec/java_home -V 2>&1 | while IFS= read -r line; do
+    info "  $line"
+  done
+}
+
 setup_ssh() {
   local ssh_key_path="${SSH_PRIVATE_KEY_FILE:-$HOME/.ssh/id_ed25519}"
   mkdir -p "$HOME/.ssh"
@@ -163,13 +221,17 @@ link_dotfiles() {
   link_file "$DOTFILES_DIR/.env" "$HOME/.env"
   link_file "$DOTFILES_DIR/.zprofile" "$HOME/.zprofile"
   link_file "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
+  copy_file_if_missing "$DOTFILES_DIR/.zshrc.local.example" "$HOME/.zshrc.local"
   link_file "$DOTFILES_DIR/.aliases" "$HOME/.aliases"
   link_file "$DOTFILES_DIR/.functions" "$HOME/.functions"
   link_file "$DOTFILES_DIR/.zshenv" "$HOME/.zshenv"
   link_file "$DOTFILES_DIR/.gitconfig" "$HOME/.gitconfig"
-  link_file "$DOTFILES_DIR/.gitconfig_work" "$HOME/.gitconfig_work"
+  copy_file_if_missing "$DOTFILES_DIR/.gitconfig.local.example" "$HOME/.gitconfig.local"
+  copy_file_if_missing "$DOTFILES_DIR/.gitconfig.work.local.example" "$HOME/.gitconfig.work.local"
   link_file "$DOTFILES_DIR/.config/gh/config.yml" "$HOME/.config/gh/config.yml"
   link_file "$DOTFILES_DIR/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
+  link_file "$DOTFILES_DIR/.config/starship.toml" "$HOME/.config/starship.toml"
+  link_file "$DOTFILES_DIR/.config/ghostty/config" "$HOME/.config/ghostty/config"
   link_file "$DOTFILES_DIR/.config/rclone/rclone.conf" "$HOME/.config/rclone/rclone.conf"
   link_file "$DOTFILES_DIR/.config/git/ignore" "$HOME/.config/git/ignore"
   link_file "$DOTFILES_DIR/.m2/settings.xml" "$HOME/.m2/settings.xml"
@@ -196,6 +258,7 @@ main() {
   setup_homebrew
   link_dotfiles
   setup_mise
+  link_mise_jdks
   setup_ssh
   set_default_shell
 

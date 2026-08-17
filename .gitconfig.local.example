@@ -1,0 +1,8 @@
+# Machine-local Git settings. The installer copies this file to ~/.gitconfig.local
+# only when that file does not already exist.
+[http]
+  proxy = http://127.0.0.1:7890
+[https]
+  proxy = http://127.0.0.1:7890
+
+

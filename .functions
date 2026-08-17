@@ -30,58 +30,6 @@ function mkcd() {
   mkdir -p -- "$1" && cd -- "$1"
 }
 
-# Go to the root of the current git repository
-function croot() {
-    local root
-    if ! root=$(git rev-parse --show-toplevel 2>/dev/null); then
-        echo "Not in a git repository" >&2
-        return 1
-    fi
-
-    cd -- "$root"
-}
-
-# Create a temporary directory and cd into it
-function tmpcd() {
-    local dir
-    dir=$(mktemp -d -t "tmpcd.XXXXXX") || return 1
-    cd -- "$dir"
-}
-
-# Extract various archive types
-function extract() {
-  if [[ -f $1 ]]; then
-    case $1 in
-      *.tar.bz2)   tar xjf "$1"     ;;
-      *.tar.gz)    tar xzf "$1"     ;;
-      *.bz2)       bunzip2 "$1"     ;;
-      *.rar)       unrar x "$1"     ;;
-      *.gz)        gunzip "$1"      ;;
-      *.tar)       tar xf "$1"      ;;
-      *.tbz2)      tar xjf "$1"     ;;
-      *.tgz)       tar xzf "$1"     ;;
-      *.zip)       unzip "$1"       ;;
-      *.Z)         uncompress "$1"  ;;
-      *.7z)        7z x "$1"        ;;
-      *)           echo "'$1' cannot be extracted via extract()" ;;
-    esac
-  else
-    echo "'$1' is not a valid file"
-  fi
-}
-
-# 查找并进入目录
-function cdf() {
-    local target
-    target=$(find . -type d -name "*$1*" -print -quit)
-    if [[ -z "$target" ]]; then
-        echo "No matching directory found: $1" >&2
-        return 1
-    fi
-
-    cd -- "$target"
-}
-
 # 杀死占用端口的进程
 function killport() {
     local force=false list=false port signal
@@ -108,9 +56,9 @@ function killport() {
     fi
 
     local -a pids
-    pids=("${(@f)$(lsof -ti tcp:"$port" 2>/dev/null)}")
+    pids=("${(@f)$(lsof -ti tcp:"$port" -sTCP:LISTEN 2>/dev/null)}")
     if (( ${#pids[@]} == 0 )); then
-        echo "No process found on port $port"
+        echo "No process listening on port $port"
         return 1
     fi
 
@@ -126,7 +74,7 @@ function killport() {
     sleep 1
 
     local -a remaining
-    remaining=("${(@f)$(lsof -ti tcp:"$port" 2>/dev/null)}")
+    remaining=("${(@f)$(lsof -ti tcp:"$port" -sTCP:LISTEN 2>/dev/null)}")
     if (( ${#remaining[@]} )); then
         echo "Still running after SIGTERM, force killing: ${remaining[*]}"
         kill -9 "${remaining[@]}"
@@ -149,36 +97,6 @@ function dsh() {
     fi
 
     docker exec -it "$container" "$shell_bin"
-}
-
-# Docker Cleanup Function
-function clean_docker() {
-  echo "Starting Docker cleanup..."
-
-  # Remove stopped containers
-  local -a containers images
-  containers=("${(@f)$(docker ps -a -q)}")
-  if (( ${#containers[@]} )); then
-    echo "Removing containers: ${containers[*]}"
-    docker rm -f "${containers[@]}"
-  else
-    echo "No containers to remove"
-  fi
-
-  # Remove dangling images
-  images=("${(@f)$(docker images -a -q -f dangling=true)}")
-  if (( ${#images[@]} )); then
-    echo "Removing dangling images: ${images[*]}"
-    docker rmi "${images[@]}"
-  else
-    echo "No dangling images to remove"
-  fi
-
-  # Clean networks
-  echo "Cleaning unused networks..."
-  docker network prune --force
-
-  echo "Docker cleanup completed!"
 }
 
 function clean_idea() {
@@ -250,14 +168,47 @@ function pull_code() {
     fi
 }
 
-# Fetch updates in the current git repository
-function gfetch() {
-  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+
+# Interactively switch to a local branch, ordered by recent activity
+function gswi() {
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
     echo "Error: Not in a git repository" >&2
     return 1
   fi
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is not installed" >&2
+    return 1
+  fi
 
-  git fetch --all --prune --tags
+  local branch
+  branch=$(
+    git for-each-ref \
+      --sort=-committerdate \
+      --format='%(refname:short)' \
+      refs/heads |
+      fzf --prompt='Switch branch> '
+  ) || return
+
+  [[ -n "$branch" ]] && git switch "$branch"
+}
+
+# Resolve the default branch from origin/HEAD, with a local fallback
+function git_default_branch() {
+  local ref branch
+  if ref=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null); then
+    print -r -- "${ref#origin/}"
+    return 0
+  fi
+
+  for branch in main master; do
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+      print -r -- "$branch"
+      return 0
+    fi
+  done
+
+  echo "Error: Unable to determine the default branch" >&2
+  return 1
 }
 
 # -----------------------------------------------------------------------------
@@ -270,41 +221,21 @@ function dotpull() {
   (cd ~/.dotfiles && git pull)
 }
 
-# Git Push Function
-function gpo() {
-  local branch
-  branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null) || return
-
-  if [[ $# -eq 0 ]]; then
-    git push origin "$branch"
-  else
-    git push "$@"
-  fi
-}
-
-# Git Main Function - Switch to main/master and pull
+# Switch to the default branch and fast-forward it
 function gmp() {
-  # Check if we're in a git repository
-  if ! git rev-parse --git-dir > /dev/null 2>&1; then
-    echo "Error: Not in a git repository"
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository" >&2
     return 1
   fi
 
-  # Try to checkout main first, fall back to master
-  if git show-ref --verify --quiet refs/heads/main; then
-    echo "Switching to main branch..."
-    git switch main
-  elif git show-ref --verify --quiet refs/heads/master; then
-    echo "Switching to master branch..."
-    git switch master
-  else
-    echo "Error: Neither 'main' nor 'master' branch exists"
-    return 1
-  fi
+  local branch
+  branch=$(git_default_branch) || return
 
-  # Pull the latest changes
+  echo "Switching to $branch..."
+  git switch "$branch" || return
+
   echo "Pulling latest changes..."
-  git pull
+  git pull --ff-only
 }
 
 # Git Tag Push Function - Create and push CalVer tag from main branch

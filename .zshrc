@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# zshrc: 交互式 shell 配置、补全、别名和函数
+# Shared interactive Zsh configuration
 # -----------------------------------------------------------------------------
 autoload -Uz compinit
 
@@ -11,50 +11,47 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# Zsh 选项优化
+# Zsh options
 # -----------------------------------------------------------------------------
-setopt auto_cd              # 直接 cd 到目录名
-setopt auto_pushd           # 自动 pushd
-setopt pushd_ignore_dups    # 忽略重复目录
-setopt pushdminus           # 支持 cd -2 等语法
+setopt auto_cd
+setopt auto_pushd
+setopt pushd_ignore_dups
+setopt pushdminus
 
 # -----------------------------------------------------------------------------
-# 历史记录优化
+# History
 # -----------------------------------------------------------------------------
 HISTSIZE=50000
 SAVEHIST=50000
-setopt HIST_IGNORE_ALL_DUPS    # 删除重复历史
-setopt HIST_FIND_NO_DUPS       # 搜索不显示重复
-setopt HIST_REDUCE_BLANKS      # 删除空白行
-setopt HIST_IGNORE_SPACE       # 忽略空格开头的命令
-setopt SHARE_HISTORY           # 多会话共享历史
-setopt APPEND_HISTORY          # 追加模式
-setopt INC_APPEND_HISTORY      # 立即写入
-setopt EXTENDED_HISTORY        # 保存时间戳
-
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+setopt EXTENDED_HISTORY
 
 # -----------------------------------------------------------------------------
-# 用户配置（aliases, functions）
+# User commands
 # -----------------------------------------------------------------------------
 [[ -f ~/.aliases ]] && source ~/.aliases
 [[ -f ~/.functions ]] && source ~/.functions
 
 if command -v mise >/dev/null 2>&1; then
   eval "$(mise activate zsh)"
+  maven_bin="$(mise which mvn 2>/dev/null)"
+  export MAVEN_HOME="$(dirname "$(dirname "$maven_bin")")"
 fi
 
-pure_path="$(npm root -g 2>/dev/null)/pure-prompt"
-if [[ -d "$pure_path" ]]; then
-  fpath+=("$pure_path")
-  autoload -U promptinit
-  promptinit
-  export PURE_GIT_PULL=0
-  export PURE_CMD_MAX_EXEC_TIME=999999
-  zstyle ':prompt:pure:path:separator' dim yes
-  prompt pure
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
 fi
 
-# -----------------------------------------------------------------------------
-# OrbStack (可选，未安装则忽略)
-# -----------------------------------------------------------------------------
+# OrbStack (optional)
 [[ -f "${HOME}/.orbstack/shell/init.zsh" ]] && source "${HOME}/.orbstack/shell/init.zsh"
+
+[[ -f "${HOME}/.zshrc.local" ]] && source "${HOME}/.zshrc.local"
+
+# Keep the command search path stable across nested login shells.
+typeset -U path PATH

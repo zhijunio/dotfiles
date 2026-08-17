@@ -1,0 +1,3 @@
+# Machine-local interactive shell settings. The installer copies this file to
+# ~/.zshrc.local only when that file does not already exist.
+

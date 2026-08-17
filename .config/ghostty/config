@@ -1,0 +1,5 @@
+font-size = 14
+window-padding-x = 4
+cursor-style = bar
+cursor-style-blink = false
+keybind = alt+backspace=text:\x1b\x7f
