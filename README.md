@@ -7,18 +7,46 @@
 
 ## 快速开始
 
+### 已有 SSH 密钥的日常安装
+
 ```bash
 git clone git@github.com:zhijunio/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./install.sh
+DOTFILES_GIT_CRYPT_KEY=~/dotfiles-git-crypt.key ./install.sh
 exec zsh -l
 ```
+
+### macOS 重装后的首次恢复
+首次恢复时通常还没有 SSH 私钥，因此先使用 HTTPS：
+
+```bash
+# 1. 安装 Command Line Tools，并等待安装完成
+xcode-select --install
+
+# 2. 使用 HTTPS 克隆，避免 SSH 尚未配置
+git clone https://github.com/zhijunio/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles
+
+# 3. 运行安装脚本；它会先安装 git-crypt，再解锁敏感配置
+DOTFILES_GIT_CRYPT_KEY=~/dotfiles-git-crypt.key ./install.sh
+
+# 4. 初始化完成后确认加密文件和 SSH 私钥
+git-crypt status
+ssh-keygen -l -f .ssh/id_ed25519
+
+# 5. 重新加载 Shell
+exec zsh -l
+```
+
+安装脚本在创建任何敏感配置链接前，会拒绝未解锁的仓库或无效 SSH 私钥。
+
+Homebrew 默认使用 USTC 镜像；镜像不可用时会自动回退到官方安装脚本。
 
 ## 项目结构
 
 | 目录/文件               | 说明 |
 |-------------------------|------|
-| `install.sh`            | 一键引导脚本：macOS 系统优化 → Homebrew → mise → SSH → Symlink |
+| `install.sh` | 一键引导脚本：macOS 系统优化 → Homebrew → git-crypt/SSH 检查 → Symlink → mise |
 | `Brewfile`              | 50+ 包声明：CLI 工具、语言运行时、GUI 应用、npm 包 |
 | `.zprofile`             | 登录 shell：Homebrew shellenv、登录期 PATH |
 | `.zshrc`                | Zsh 补全、历史、alias/function、mise、Starship、OrbStack 配置 |
@@ -41,11 +69,13 @@ exec zsh -l
 
 | 阶段 | 具体操作 |
 |------|----------|
+| 前置检查 | 要求 macOS Command Line Tools；Homebrew 安装后验证 git-crypt 解锁状态和 SSH 私钥 |
 | macOS 系统设置 | 主机名、时区 (Asia/Shanghai)、KeyRepeat(1/10)、Dock/Finder 动画加速 |
-| Homebrew 安装 | 通过 USTC 镜像安装，信任第三方 tap，执行 `brew bundle` |
+| Homebrew 安装 | 优先通过 USTC 镜像安装，失败时回退官方安装脚本；执行 `brew bundle` |
+| 敏感配置 | 验证 git-crypt 密钥和 SSH 私钥后才创建敏感配置链接 |
 | mise | 安装 Node、pnpm、Python、Java 等版本 |
 | Symlink 配置文件 | 链接共享配置；首次创建本机 Git 与 Zsh 配置，已有 local 文件保持不变 |
-| SSH 密钥 | 检查/生成 Ed25519 密钥，启动 ssh-agent 并加载 |
+| SSH 密钥 | 设置权限，启动 ssh-agent 并加载 |
 | 默认 Shell | 切换为 zsh（若未生效） |
 
 ## 特性
@@ -95,7 +125,7 @@ Git 工作身份存放在未纳入版本控制的 `~/.gitconfig.work.local`，�
 
 ```bash
 # 用密钥文件解锁（密钥需从密码管理器导出）
-git-crypt unlock /path/to/dotfiles-git-crypt.key
+git-crypt unlock ~/dotfiles-git-crypt.key
 
 # 解锁后文件自动解密，可正常查看/编辑
 cat .env
@@ -130,14 +160,14 @@ git-crypt export-key ~/dotfiles-git-crypt.key
 # 密钥存入密码管理器后删除本地副本
 ```
 
-> 密钥文件 `dotfiles-git-crypt.key` 请安全保存在 1Password / Bitwarden 等密码管理器。**密钥丢失后无法恢复加密文件。**
+> 密钥文件 `dotfiles-git-crypt.key` 请安全保存在密码管理器或离线加密备份中。**密钥丢失后无法恢复加密文件。**
 
 #### 常见问题
 
 **Q: 提交时报错说文件被加密？**  
 检查是否已执行 `git-crypt unlock`。如果已经 unlock 仍有问题，重试：
 ```bash
-git-crypt unlock /path/to/dotfiles-git-crypt.key
+git-crypt unlock ~/dotfiles-git-crypt.key
 ```
 
 **Q: 如何判断文件是否加密？**  
@@ -151,6 +181,27 @@ macOS 安全策略可能保护密钥文件，不影响 encrypt/decrypt 功能。
 ```bash
 rm -rf .git/git-crypt/keys
 ```
+### 重装后仍需手工完成
+
+安装脚本不会代替 macOS 的账户授权或第三方登录。重装后按需完成：
+
+- 登录 Apple ID/iCloud，启用 FileVault 和 Touch ID
+- 在“系统设置 → 隐私与安全性”授予 Ghostty、Terminal 或相关工具所需的完全磁盘访问权限
+- 登录 GitHub，并将 `.ssh/id_ed25519.pub` 注册到 GitHub
+- 登录浏览器、IntelliJ IDEA、Claude Code、Codex、飞书、微信和云盘
+- 恢复企业网络工具（例如 CorpLink/飞连）及登录项
+
+安装完成后运行：
+
+```bash
+brew bundle check --file Brewfile --no-upgrade
+mise doctor
+ssh -T git@github.com
+java -version
+node --version
+pnpm --version
+```
+
 ### Java 多版本（mise）
 
 - `j8` → `mise shell java@zulu-8`
@@ -159,19 +210,28 @@ rm -rf .git/git-crypt/keys
 
 JVM 参数：`-Xms1g -Xmx1g -XX:+UseG1GC`。
 
-### 软件清单 (Brewfile)
+### 软件管理
 
-- 终端：zsh, bash, ghostty, starship, yazi, fzf, zoxide, eza, bat
-- 开发：git-crypt, git-delta, gh, glab, just, jbang
-- AI：codex, claude-code, cursor, cc-switch
-- 运行时：node / pnpm / python / java（mise）
-- 数据库：mysql-client, duckdb, orbstack, tableplus
-- 网络：google-chrome, insomnia, xh, wget, switchhosts
-- 云存储：rclone, aliyunpan, baidunetdisk
-- 安全：gnupg
-- 生产力：feishu, wechat, wetype, typora, intellij-idea
+优先使用 mise 管理可独立安装、需要版本锁定的 CLI：
 
-完整列表见 [`Brewfile`](Brewfile)。
+- 运行时：Node、pnpm、Python、Go、Rust、Java、Maven
+- 通用 CLI：bat、eza、fastfetch、fd、fzf、jq、ripgrep、sd、xh、yq、zoxide
+- 开发 CLI：glab、jbang、just、pandoc、task、uv、watchexec
+- 交互工具：OpenCode、Starship、Yazi、tlrc
+- 云存储：rclone
+- npm CLI：opencodex、Lark CLI
+
+Homebrew 只保留系统基础、服务、动态库和 GUI 应用：
+
+- 引导与 Git：mise、git-crypt、gh、git-delta
+- 系统与安全：bash、zsh、gnupg、usage、wget
+- 服务：herdr
+- 数据库和动态库：mysql-client、libpq、librsvg、poppler、webp 等
+- GUI：Ghostty、OrbStack、IntelliJ IDEA、Chrome、Cursor、Codex 等
+
+`git-crypt` 必须在 mise 初始化前可用；`gh` 和 `git-delta` 被 Git 配置直接依赖；`herdr` 由 Homebrew 管理后台服务，因此继续由 Homebrew 安装。
+
+完整列表见 [mise 配置](.config/mise/config.toml) 和 [`Brewfile`](Brewfile)。
 
 ## 环境变量
 
@@ -180,6 +240,7 @@ JVM 参数：`-Xms1g -Xmx1g -XX:+UseG1GC`。
 | `DOTFILES_DIR` | `~/.dotfiles` | dotfiles 仓库路径 |
 | `CODEX_HOME` | `~/.codex` | Codex 配置目录 |
 | `SSH_PRIVATE_KEY_FILE` | `~/.ssh/id_ed25519` | SSH 密钥路径 |
+| `DOTFILES_GIT_CRYPT_KEY` | `~/dotfiles-git-crypt.key`（推荐） | 首次安装时用于解锁敏感配置 |
 | `HOMEBREW_BOTTLE_DOMAIN` | `mirrors.ustc.edu.cn` | Homebrew USTC 镜像 |
 
 ## 参考

@@ -1,46 +1,24 @@
-tap "anomalyco/tap", trusted: true
 tap "can1357/tap"
 tap "farion1231/ccswitch", trusted: true
-tap "go-task/tap"
 tap "muxy-app/tap"
 # Command-line client tool for Alibaba aDrive disk
 brew "aliyunpan"
 # Bourne-Again SHell, a UNIX command interpreter
 brew "bash"
-# Clone of cat(1) with syntax highlighting and Git integration
-brew "bat"
-# Modern, maintained replacement for ls
-brew "eza"
-# Like neofetch, but much faster because written mostly in C
-brew "fastfetch"
-# Simple, fast and user-friendly alternative to find
-brew "fd"
-# Command-line fuzzy finder written in Go
-brew "fzf"
 # GitHub command-line tool
 brew "gh"
 # Enable transparent encryption/decryption of files in a git repo
 brew "git-crypt"
 # Syntax-highlighting pager for git and diff output
 brew "git-delta"
-# Open-source GitLab command-line tool
-brew "glab"
 # GNU Privacy Guard (OpenPGP)
 brew "gnupg"
 # Agent multiplexer that lives in your terminal
 brew "herdr", restart_service: :changed
-# Tool to create, edit and run self-contained source-only Java programs
-brew "jbang"
-# Lightweight and flexible command-line JSON processor
-brew "jq"
-# Handy way to save and run project-specific commands
-brew "just"
 # Postgres C API library
 brew "libpq"
 # Library to render SVG files using Cairo
 brew "librsvg"
-# Tool for working with usage-spec CLIs
-brew "usage"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
 # Deep clean and optimize your Mac
@@ -49,47 +27,16 @@ brew "mole"
 brew "mysql-client"
 # Tools for one-time password authentication systems
 brew "oath-toolkit"
-# Swiss-army knife of markup format conversion
-brew "pandoc"
-# Interpreted, interactive, object-oriented programming language
-# Execute binaries from Python packages in isolated environments
-# Fast, disk space efficient package manager
 # PDF rendering library (based on the xpdf-3.0 code base)
 brew "poppler"
-# Rsync for cloud storage
-brew "rclone"
-# Search tool like grep and The Silver Searcher
-brew "ripgrep"
-# Intuitive find & replace CLI
-brew "sd"
-# Cross-shell prompt
-brew "starship"
-# Official tldr client written in Rust
-brew "tlrc"
-# Extremely fast Python package installer and resolver, written in Rust
-brew "uv"
-# Execute commands when watched files change
-brew "watchexec"
 # Image format providing lossless and lossy compression for web images
 brew "webp"
 # Internet file retriever
 brew "wget"
-# Friendly and fast tool for sending HTTP requests
-brew "xh"
-# Blazing fast terminal file manager written in Rust, based on async I/O
-brew "yazi"
-# Process YAML, JSON, XML, CSV and properties documents from the CLI
-brew "yq"
-# Shell extension to navigate your filesystem faster
-brew "zoxide"
 # UNIX shell (command interpreter)
 brew "zsh"
-# The AI coding agent built for the terminal.
-brew "anomalyco/tap/opencode", trusted: true
 # Coding agent with the IDE wired in
 brew "can1357/tap/omp", trusted: true
-# A fast, cross-platform build tool inspired by Make, designed for modern workflows.
-brew "go-task/tap/go-task", trusted: true
 # Telegram client with ghost mode and message history
 cask "ayugram"
 # Cloud storage service
@@ -130,6 +77,3 @@ cask "typora"
 cask "wechat"
 # Text input app from WeChat team for Chinese users
 cask "wetype"
-npm "@bitkyc08/opencodex"
-npm "@larksuite/cli"
-npm "bcryptjs"

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Bootstrap macOS dev environment and symlink dotfiles into $HOME.
 #
-#   git clone git@github.com:zhijunio/dotfiles.git ~/.dotfiles
-#   cd ~/.dotfiles && ./install.sh
+#   git clone https://github.com/zhijunio/dotfiles.git ~/.dotfiles
+#   cd ~/.dotfiles && DOTFILES_GIT_CRYPT_KEY=~/dotfiles-git-crypt.key ./install.sh
 #
 set -euo pipefail
 
@@ -48,6 +48,71 @@ copy_file_if_missing() {
   ok "$dst created from template"
 }
 
+configure_homebrew_mirrors() {
+  export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
+  export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
+  export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
+  export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+  export HOMEBREW_CDN_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+  export HOMEBREW_PIP_INDEX_URL="https://pypi.mirrors.ustc.edu.cn/simple"
+}
+
+install_homebrew() {
+  local install_script
+  export HOMEBREW_INSTALL_FROM_ZIP=1
+
+  if install_script="$(curl -fsSL https://gitee.com/ineo6/homebrew-install/raw/master/install.sh)" &&
+    /bin/bash -c "$install_script"; then
+    return
+  fi
+
+  warn "Homebrew mirror installer failed; retrying with the official installer"
+  unset HOMEBREW_BREW_GIT_REMOTE HOMEBREW_CORE_GIT_REMOTE HOMEBREW_API_DOMAIN
+  unset HOMEBREW_BOTTLE_DOMAIN HOMEBREW_CDN_DOMAIN HOMEBREW_PIP_INDEX_URL
+  install_script="$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  /bin/bash -c "$install_script"
+  configure_homebrew_mirrors
+}
+
+verify_secrets_unlocked() {
+  local git_crypt_key
+  git_crypt_key="$(git -C "$DOTFILES_DIR" rev-parse --path-format=absolute \
+    --git-path git-crypt/keys/default 2>/dev/null)" || {
+    echo "无法读取仓库的 git-crypt 状态：$DOTFILES_DIR" >&2
+    exit 1
+  }
+
+  if [[ ! -s "$git_crypt_key" && -n "${DOTFILES_GIT_CRYPT_KEY:-}" ]]; then
+    info "Unlocking encrypted dotfiles"
+    (
+      cd "$DOTFILES_DIR"
+      git-crypt unlock "$DOTFILES_GIT_CRYPT_KEY"
+    )
+  fi
+
+  if [[ ! -s "$git_crypt_key" ]]; then
+    cat >&2 <<EOF
+敏感配置尚未通过 git-crypt 解锁，安装已在创建 symlink 前停止。
+
+请从独立备份恢复密钥，然后任选一种方式继续：
+  cd "$DOTFILES_DIR"
+  git-crypt unlock ~/dotfiles-git-crypt.key
+  ./install.sh
+
+或让安装脚本解锁：
+  DOTFILES_GIT_CRYPT_KEY=~/dotfiles-git-crypt.key ./install.sh
+EOF
+    exit 1
+  fi
+
+  if ! ssh-keygen -l -f "$DOTFILES_DIR/.ssh/id_ed25519" >/dev/null 2>&1; then
+    echo "解锁后的 .ssh/id_ed25519 不是有效 SSH 私钥，安装已停止。" >&2
+    exit 1
+  fi
+
+  ok "git-crypt secrets unlocked and SSH private key valid"
+}
+
 setup_macos() {
   if [[ "$(uname -s)" != "Darwin" ]]; then
     return 0
@@ -86,16 +151,10 @@ setup_macos() {
 }
 
 setup_homebrew() {
-  export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
-  export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
-  export HOMEBREW_API_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles/api"
-  export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
-  export HOMEBREW_CDN_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
-  export HOMEBREW_PIP_INDEX_URL="https://pypi.mirrors.ustc.edu.cn/simple"
+  configure_homebrew_mirrors
 
   if ! command -v brew &>/dev/null; then
-    export HOMEBREW_INSTALL_FROM_ZIP=1
-    /bin/bash -c "$(curl -fsSL https://gitee.com/ineo6/homebrew-install/raw/master/install.sh)"
+    install_homebrew
   fi
 
   if [[ -x /opt/homebrew/bin/brew ]]; then
@@ -204,13 +263,13 @@ setup_ssh() {
   if [[ ! -f "$ssh_key_path" ]]; then
     warn "No SSH private key at $ssh_key_path; generating new key"
     ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)" -f "$ssh_key_path" -N ""
-    echo "  Add to ~/.secrets/env: SSH_PRIVATE_KEY_B64=\$(base64 < \"$ssh_key_path\" | tr -d '\\n')"
+    echo "  Add this public key to GitHub: $ssh_key_path.pub"
+    echo "  Back up the private key outside this Mac before reinstalling."
   fi
 
-  if [[ -f "$ssh_key_path" ]]; then
-    eval "$(ssh-agent -s)"
-    ssh-add "$ssh_key_path" 2>/dev/null || true
-  fi
+  chmod 600 "$ssh_key_path"
+  eval "$(ssh-agent -s)"
+  ssh-add "$ssh_key_path"
 }
 
 link_dotfiles() {
@@ -256,10 +315,11 @@ main() {
 
   setup_macos
   setup_homebrew
+  verify_secrets_unlocked
   link_dotfiles
+  setup_ssh
   setup_mise
   link_mise_jdks
-  setup_ssh
   set_default_shell
 
   echo ""
