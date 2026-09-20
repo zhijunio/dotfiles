@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <mirrors>
+        <mirror>
+            <id>maven-default-http-blocker</id>
+            <mirrorOf>external:dont-match-anything-mate:*</mirrorOf>
+            <name>Pseudo repository to mirror external repositories initially using HTTP.</name>
+            <url>http://0.0.0.0/</url>
+        </mirror>
+    </mirrors>
+
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+        </server>
+        <server>
+            <id>wesine-snapshots</id>
+            <username>${env.MAVEN_WESINE_USERNAME}</username>
+            <password>${env.MAVEN_WESINE_PASSWORD}</password>
+        </server>
+        <server>
+            <id>wesine-releases</id>
+            <username>${env.MAVEN_WESINE_USERNAME}</username>
+            <password>${env.MAVEN_WESINE_PASSWORD}</password>
+        </server>
+        <server>
+            <id>github</id>
+            <username>${env.GITHUB_USERNAME}</username>
+            <password>${env.GITHUB_TOKEN}</password>
+        </server>
+    </servers>
+
+    <profiles>
+        <profile>
+            <id>wesine</id>
+            <properties>
+                <altReleaseDeploymentRepository>
+                    wesine-releases::${env.MAVEN_WESINE_BASE_URL}/nexus/repository/maven-releases/
+                </altReleaseDeploymentRepository>
+                <altSnapshotDeploymentRepository>
+                    wesine-snapshots::${env.MAVEN_WESINE_BASE_URL}/nexus/repository/maven-snapshots/
+                </altSnapshotDeploymentRepository>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>wesine-releases</id>
+                    <url>${env.MAVEN_WESINE_BASE_URL}/nexus/content/groups/public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <activeProfiles>
+        <activeProfile>wesine</activeProfile>
+    </activeProfiles>
+</settings>

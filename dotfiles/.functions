@@ -1,0 +1,283 @@
+# AI CLI wrappers
+function codex() {
+  command codex --dangerously-bypass-approvals-and-sandbox "$@"
+}
+
+function claude() {
+  command claude --dangerously-skip-permissions "$@"
+}
+
+# Yazi 文件管理器
+function y() {
+    local cwd_file cwd
+    cwd_file=$(mktemp -t "yazi-cwd.XXXXXX")
+    trap 'rm -f -- "$cwd_file"' RETURN
+
+    yazi "$@" --cwd-file="$cwd_file"
+    if cwd=$(cat -- "$cwd_file") && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        cd -- "$cwd"
+    fi
+}
+
+# 快速创建文件
+function touchd() {
+    mkdir -p -- "$(dirname -- "$1")"
+    touch -- "$1"
+}
+
+# Create directory and cd into it
+function mkcd() {
+  mkdir -p -- "$1" && cd -- "$1"
+}
+
+# 杀死占用端口的进程
+function killport() {
+    local force=false list=false port signal
+    case "$1" in
+        -l|--list)
+            list=true
+            shift
+            ;;
+        -9|--force)
+            force=true
+            shift
+            ;;
+    esac
+
+    port="${1:-}"
+    if [[ -z "$port" || ! "$port" =~ '^[0-9]+$' || "$port" -lt 1 || "$port" -gt 65535 ]]; then
+        echo "Usage: killport [--list|-l] [--force|-9] <port_number>" >&2
+        return 1
+    fi
+
+    if [[ "$list" == true ]]; then
+        lsof -nP -iTCP:"$port" -sTCP:LISTEN
+        return $?
+    fi
+
+    local -a pids
+    pids=("${(@f)$(lsof -ti tcp:"$port" -sTCP:LISTEN 2>/dev/null)}")
+    if (( ${#pids[@]} == 0 )); then
+        echo "No process listening on port $port"
+        return 1
+    fi
+
+    if [[ "$force" == true ]]; then
+        signal="-9"
+        echo "Force killing ${#pids[@]} process(es) on port $port: ${pids[*]}"
+        kill "$signal" "${pids[@]}"
+        return $?
+    fi
+
+    echo "Terminating ${#pids[@]} process(es) on port $port: ${pids[*]}"
+    kill "${pids[@]}"
+    sleep 1
+
+    local -a remaining
+    remaining=("${(@f)$(lsof -ti tcp:"$port" -sTCP:LISTEN 2>/dev/null)}")
+    if (( ${#remaining[@]} )); then
+        echo "Still running after SIGTERM, force killing: ${remaining[*]}"
+        kill -9 "${remaining[@]}"
+    fi
+}
+
+# Show listening TCP ports with owning processes
+function ports() {
+    lsof -nP -iTCP -sTCP:LISTEN
+}
+
+# Docker shell helper
+function dsh() {
+    local container="${1:-}"
+    local shell_bin="${2:-/bin/sh}"
+
+    if [[ -z "$container" ]]; then
+        echo "Usage: dsh <container> [shell]" >&2
+        return 1
+    fi
+
+    docker exec -it "$container" "$shell_bin"
+}
+
+function clean_idea() {
+    echo "🧹 Cleaning IntelliJ IDEA..."
+
+    rm -rf "/Applications/IntelliJ IDEA.app"
+    rm -rf ~/Library/Application\ Support/JetBrains/
+    rm -rf ~/Library/Preferences/com.apple.java.util.prefs.plist
+    rm -rf ~/Library/Preferences/com.jetbrains*
+    rm -rf ~/Library/Preferences/jetbrains*
+    rm -rf ~/Library/Caches/JetBrains
+    rm -rf ~/Library/Logs/JetBrains/
+    rm -rf ~/Library/Saved\ Application\ State/com.jetbrains.intellij.savedState/
+    rm -rf ~/.cache/JetBrains/
+    rm -rf ~/.config/JetBrains/
+
+    killall cfprefsd 2>/dev/null || true
+
+    echo "✅ IntelliJ IDEA cleaned successfully"
+}
+
+# 清理构建产物
+function clean_build() {
+    local dry_run=false
+    if [ "$1" = "-n" ] || [ "$1" = "--dry-run" ]; then
+        dry_run=true
+    fi
+
+    if [ "$(pwd -P)" = "/" ]; then
+        echo "cleanup: refuse to run at filesystem root" >&2
+        return 1
+    fi
+
+    local dirs_to_clean="node_modules target build dist out .next __pycache__ .pytest_cache .mypy_cache .gradle .turbo coverage .nuxt venv .venv Pods"
+
+    if [ "$dry_run" = true ]; then
+        echo "cleanup: dry-run (won't delete):"
+        for dir in $dirs_to_clean; do
+            find . -type d -name "$dir" -prune -print 2>/dev/null | while read -r d; do
+                [[ "$d" != */.git/* ]] && echo "$d"
+            done
+        done
+        return 0
+    fi
+
+    for dir in $dirs_to_clean; do
+        find . -type d -name "$dir" -prune -print 2>/dev/null | while read -r d; do
+            [[ "$d" != */.git/* ]] && rm -rf "$d" 2>/dev/null
+        done
+    done
+
+    find . -type f \( -name ".DS_Store" -o -name "*.log" \) -print 2>/dev/null | while read -r f; do
+        [[ "$f" != */.git/* ]] && rm -f "$f" 2>/dev/null
+    done
+
+    echo "cleanup: done"
+}
+
+# 拉取代码
+function pull_code() {
+    local root
+    if [ "$1" = "." ] || [ "$1" = "--here" ]; then
+        root="$(pwd -P)"
+        (cd "$root" && for dir in */; do [ -d "$dir/.git" ] && (cd "$dir" && git pull); done)
+    else
+        for root in "$HOME/github" "$HOME/work"; do
+            [ -d "$root" ] && (cd "$root" && for dir in */; do [ -d "$dir/.git" ] && (cd "$dir" && git pull); done)
+        done
+    fi
+}
+
+
+# Interactively switch to a local branch, ordered by recent activity
+function gswi() {
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository" >&2
+    return 1
+  fi
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Error: fzf is not installed" >&2
+    return 1
+  fi
+
+  local branch
+  branch=$(
+    git for-each-ref \
+      --sort=-committerdate \
+      --format='%(refname:short)' \
+      refs/heads |
+      fzf --prompt='Switch branch> '
+  ) || return
+
+  [[ -n "$branch" ]] && git switch "$branch"
+}
+
+# Resolve the default branch from origin/HEAD, with a local fallback
+function git_default_branch() {
+  local ref branch
+  if ref=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null); then
+    print -r -- "${ref#origin/}"
+    return 0
+  fi
+
+  for branch in main master; do
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+      print -r -- "$branch"
+      return 0
+    fi
+  done
+
+  echo "Error: Unable to determine the default branch" >&2
+  return 1
+}
+
+# -----------------------------------------------------------------------------
+# Dotfiles workflow
+# -----------------------------------------------------------------------------
+function dotpush() {
+  (cd ~/.dotfiles && git add -A && git commit -m "${1:-update}" && git push)
+}
+function dotpull() {
+  (cd ~/.dotfiles && git pull)
+}
+
+# Switch to the default branch and fast-forward it
+function gmp() {
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "Error: Not in a git repository" >&2
+    return 1
+  fi
+
+  local branch
+  branch=$(git_default_branch) || return
+
+  echo "Switching to $branch..."
+  git switch "$branch" || return
+
+  echo "Pulling latest changes..."
+  git pull --ff-only
+}
+
+# Git Tag Push Function - Create and push CalVer tag from main branch
+function gtp() {
+  if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    return 1
+  fi
+
+  local current_branch
+  current_branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null)
+
+  # Ensure we're on main/master
+  if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
+    echo "Error: Must be on main or master branch (currently on '$current_branch')"
+    return 1
+  fi
+
+  # Pull latest changes
+  echo "Pulling latest changes..."
+  git pull || return 1
+
+  # Generate CalVer tag: vYY.MM.N (incrementing N from latest tag in current month)
+  local prefix
+  prefix="v$(date +"%y.%m")"
+
+  # Find the highest N in existing vYY.MM.N tags
+  local last_num
+  last_num=$(git tag -l "${prefix}.*" | sed "s/^${prefix}\.//" | sort -n | tail -1)
+
+  local next_num
+  if [[ -z "$last_num" ]]; then
+    next_num=1
+  else
+    next_num=$((last_num + 1))
+  fi
+
+  local tag="${prefix}.${next_num}"
+
+  echo "Creating tag: $tag"
+  git tag "$tag" || return 1
+
+  echo "Pushing tag to origin..."
+  git push origin "$tag"
+}

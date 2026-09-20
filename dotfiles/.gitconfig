@@ -1,0 +1,52 @@
+[core]
+  editor = vim
+  pager = delta
+  autocrlf = input
+  eol = lf
+  safecrlf = false
+  untrackedCache = true
+  excludesfile = ~/.config/git/ignore
+
+[interactive]
+  diffFilter = delta --color-only
+[diff]
+  algorithm = histogram
+  colorMoved = default
+[delta]
+  navigate = true
+[rebase]
+  autosquash = true
+  autoStash = true
+[init]
+  defaultBranch = main
+[pull]
+  ff = only
+[push]
+  default = current
+  autoSetupRemote = true
+[rerere]
+  enabled = true
+[http]
+  postBuffer = 5242880000
+[credential]
+  helper = osxkeychain
+[safe]
+  directory = *
+
+[user]
+  name = zhijunio
+  email = zhijun.lab@gmail.com
+
+[include]
+  path = ~/.gitconfig.local
+
+[includeIf "gitdir:~/work/"]
+  path = ~/.gitconfig.work
+
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

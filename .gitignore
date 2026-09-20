@@ -1,0 +1,6 @@
+.env
+.env.*
+.gitconfig.work
+.DS_Store
+.idea/
+node_modules/
