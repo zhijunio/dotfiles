@@ -147,7 +147,7 @@ alias reload_shell='exec zsh -l'
 # -----------------------------------------------------------------------------
 # Runtime switching
 # -----------------------------------------------------------------------------
-alias j8='mise shell java@zulu-8'
-alias j21='mise shell java@21'
-alias j25='mise shell java@25'
-alias j27='mise shell java@27'
+alias j8='sdk use java 8-zulu'
+alias j21='sdk use java 21-tem'
+alias j25='sdk use java 25-tem'
+alias j27='sdk use java 27-tem'

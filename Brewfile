@@ -29,8 +29,8 @@ brew "hey"
 brew "imagemagick-full"
 # Postgres C API library
 brew "libpq"
-# Java-based project management
-brew "maven"
+# JavaScript runtime
+brew "node"
 # Deep clean and optimize your Mac
 brew "mole"
 # Tools for one-time password authentication systems

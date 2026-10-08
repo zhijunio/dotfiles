@@ -18,8 +18,6 @@ fi
 [[ -f ~/.aliases ]] && source ~/.aliases
 [[ -f ~/.functions ]] && source ~/.functions
 
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
-  maven_bin="$(mise which mvn 2>/dev/null)"
-  export MAVEN_HOME="$(dirname "$(dirname "$maven_bin")")"
-fi
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
