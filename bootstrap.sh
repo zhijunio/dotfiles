@@ -42,18 +42,18 @@ fi
 SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 export SDKMAN_DIR
 SDKMAN_JAVA_8_VERSION="${SDKMAN_JAVA_8_VERSION:-8.0.504+1-zulu}"
-SDKMAN_JAVA_21_VERSION="${SDKMAN_JAVA_21_VERSION:-21.0.0.0+35-tem}"
-SDKMAN_JAVA_25_VERSION="${SDKMAN_JAVA_25_VERSION:-25.0.3.0+9-tem}"
+SDKMAN_JAVA_21_VERSION="${SDKMAN_JAVA_21_VERSION:-21-tem}"
+SDKMAN_JAVA_25_VERSION="${SDKMAN_JAVA_25_VERSION:-25-tem}"
 SDKMAN_JAVA_27_VERSION="${SDKMAN_JAVA_27_VERSION:-27.0.0.0+35-tem}"
 
 BREW_BASH="$(brew --prefix bash)/bin/bash"
-"$BREW_BASH" - \
+"$BREW_BASH" -s \
   "$SDKMAN_DIR" \
   "$SDKMAN_JAVA_8_VERSION" \
   "$SDKMAN_JAVA_21_VERSION" \
   "$SDKMAN_JAVA_25_VERSION" \
   "$SDKMAN_JAVA_27_VERSION" <<'SDKMAN_BOOTSTRAP'
-set -euo pipefail
+set -eo pipefail
 
 SDKMAN_DIR="$1"
 export SDKMAN_DIR
@@ -142,4 +142,5 @@ link_dotfile dotfiles/.aliases .aliases
 link_dotfile dotfiles/.functions .functions
 link_dotfile dotfiles/.zshrc .zshrc
 link_dotfile dotfiles/.zshenv .zshenv
+link_dotfile dotfiles/.ssh/config .ssh/config
 link_dotfile dotfiles/settings.xml .m2/settings.xml
