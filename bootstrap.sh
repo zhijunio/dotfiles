@@ -41,10 +41,10 @@ fi
 
 SDKMAN_DIR="${SDKMAN_DIR:-$HOME/.sdkman}"
 export SDKMAN_DIR
-SDKMAN_JAVA_8_VERSION="${SDKMAN_JAVA_8_VERSION:-8-zulu}"
-SDKMAN_JAVA_21_VERSION="${SDKMAN_JAVA_21_VERSION:-21-tem}"
-SDKMAN_JAVA_25_VERSION="${SDKMAN_JAVA_25_VERSION:-25-tem}"
-SDKMAN_JAVA_27_VERSION="${SDKMAN_JAVA_27_VERSION:-27-tem}"
+SDKMAN_JAVA_8_VERSION="${SDKMAN_JAVA_8_VERSION:-8.0.504+1-zulu}"
+SDKMAN_JAVA_21_VERSION="${SDKMAN_JAVA_21_VERSION:-21.0.0.0+35-tem}"
+SDKMAN_JAVA_25_VERSION="${SDKMAN_JAVA_25_VERSION:-25.0.3.0+9-tem}"
+SDKMAN_JAVA_27_VERSION="${SDKMAN_JAVA_27_VERSION:-27.0.0.0+35-tem}"
 
 BREW_BASH="$(brew --prefix bash)/bin/bash"
 "$BREW_BASH" - \
@@ -57,6 +57,7 @@ set -euo pipefail
 
 SDKMAN_DIR="$1"
 export SDKMAN_DIR
+java_default_version="$4"
 if [[ ! -s "$SDKMAN_DIR/bin/sdkman-init.sh" ]]; then
   printf '[bootstrap] 未找到 SDKMAN，开始安装\n' >&2
   curl -fsSL https://get.sdkman.io | "$BASH"
@@ -64,11 +65,11 @@ fi
 source "$SDKMAN_DIR/bin/sdkman-init.sh"
 
 for java_version in "$2" "$3" "$4" "$5"; do
-  if [[ ! -d "$SDKMAN_DIR/candidates/java/$java_version" ]]; then
+  if [[ ! -d "$SDKMAN_DIR/candidates/java/$java_version" && ! -L "$SDKMAN_DIR/candidates/java/$java_version" ]]; then
     printf 'n\n' | sdk install java "$java_version"
   fi
 done
-sdk default java "$4"
+sdk default java "$java_default_version"
 
 if [[ ! -d "$SDKMAN_DIR/candidates/maven/current" ]]; then
   printf 'y\n' | sdk install maven

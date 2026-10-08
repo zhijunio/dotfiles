@@ -92,7 +92,7 @@ sdk current
 sdk list java
 ```
 
-Java 默认使用 `8-zulu`、`21-tem`、`25-tem` 和 `27-tem`。版本不可用时，可通过同名环境变量覆盖，例如 `SDKMAN_JAVA_25_VERSION=25.0.1-tem ./bootstrap.sh`。
+Java 默认使用 `8.0.504+1-zulu`、`21.0.0.0+35-tem`、`25.0.3.0+9-tem` 和 `27.0.0.0+35-tem`。版本不可用时，可通过同名环境变量覆盖，例如 `SDKMAN_JAVA_25_VERSION=25.0.1-tem ./bootstrap.sh`。
 
 更新配置后重新应用：
 
